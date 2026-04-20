@@ -1,0 +1,271 @@
+openapi: 3.0.0
+info:
+  title: Lumine CRM API
+  version: 1.0.0
+
+paths:
+  /api/v1/auth/login:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /api/v1/auth/refresh:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+
+  /api/v1/upload:
+    post:
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tasks:
+    get:
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FollowUpTask'
+
+  /api/v1/tasks/{task_id}:
+    patch:
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdateRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowUpTask'
+
+  /api/v1/evidence:
+    post:
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvidenceRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceResponse'
+
+  /api/v1/reports/kpi:
+    get:
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPIReport'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        staff_id:
+          type: integer
+        role:
+          type: string
+          enum: [sales_associate, store_manager]
+
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    RefreshResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+
+    FollowUpTask:
+      type: object
+      properties:
+        id:
+          type: integer
+        customer_id:           # LOCKED. Never: cust_id, customerId, customer
+          type: string
+        task_type:             # LOCKED. Never: type, followup_type
+          type: string
+          enum: [2D, 2W, 2M]
+        task_basis:            # LOCKED. Always posting_date unless manual_override
+          type: string
+          enum: [posting_date, manual_override]
+        due_date:              # LOCKED. ISO 8601 date string
+          type: string
+          format: date
+        calculated_from:       # LOCKED. The actual posting_date used
+          type: string
+          format: date
+        status:                # LOCKED. Never: state, task_status
+          type: string
+          enum: [Pending, Done, Superseded]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TaskUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Done]
+
+    EvidenceRequest:
+      type: object
+      properties:
+        task_id:               # LOCKED. Never: taskId, task
+          type: integer
+        notes:
+          type: string
+        image:
+          type: string
+          format: binary
+
+    EvidenceResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        task_id:
+          type: integer
+        notes:
+          type: string
+        image_uri:
+          type: string
+          nullable: true
+        image_size_kb:
+          type: integer
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+
+    UploadRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+
+    UploadResponse:
+      type: object
+      properties:
+        tasks_created:
+          type: integer
+        customers_processed:
+          type: integer
+        cycles_reset:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error_code:
+          type: string
+        message:
+          type: string
+        detail:
+          type: string
+
+    KPIReport:
+      type: object
+      properties:
+        staff_id:
+          type: integer
+        store_id:
+          type: integer
+        total_tasks:
+          type: integer
+        completed_tasks:
+          type: integer
+        completion_rate:
+          type: number
+          format: float

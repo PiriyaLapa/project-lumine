@@ -1,0 +1,33 @@
+{
+  "format_version": "SAP_ERP_6.0",
+  "required_internal_fields": [
+    "customer_id",
+    "idoc_number",
+    "posting_date",
+    "staff_employee_code"
+  ],
+  "mappings": {
+    "Customer": "customer_id",
+    "Cust_ID": "customer_id",
+    "CustomerNo": "customer_id",
+    "Customer No": "customer_id",
+    "IDoc Number": "idoc_number",
+    "IDoc No": "idoc_number",
+    "IDOC": "idoc_number",
+    "Posting Date": "posting_date",
+    "PostingDate": "posting_date",
+    "Doc Date": "posting_date",
+    "EAN": "ean",
+    "EAN Code": "ean",
+    "Barcode": "ean",
+    "Material Description": "material_desc",
+    "Material Desc": "material_desc",
+    "MatDesc": "material_desc",
+    "Description": "material_desc",
+    "Sales Rep": "staff_employee_code",
+    "SalesRep": "staff_employee_code",
+    "Sales Representative": "staff_employee_code",
+    "Employee Code": "staff_employee_code",
+    "Emp Code": "staff_employee_code"
+  }
+}

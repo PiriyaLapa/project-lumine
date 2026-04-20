@@ -1,0 +1,51 @@
+# =============================================================================
+# Project Lumine — .gitignore
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+credentials.json
+*.egg-info/
+.pytest_cache/
+htmlcov/
+.coverage
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# Node / React Native / Expo
+# ---------------------------------------------------------------------------
+node_modules/
+.expo/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---------------------------------------------------------------------------
+# IDE
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---------------------------------------------------------------------------
+# Never ignore (always commit these)
+# openapi.yaml — API contract, single source of truth
+# CLAUDE.md — project rules for Claude Code
+# sap_column_map.json — column mapping config
+# .env.example — environment variable template (no secrets)
+# ---------------------------------------------------------------------------
+!openapi.yaml
+!CLAUDE.md
+!backend/config/sap_column_map.json
+!backend/.env.example
