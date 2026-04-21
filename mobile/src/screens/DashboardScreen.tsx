@@ -9,7 +9,7 @@
  * Offline: shows cached tasks with OfflineBanner. Upload/Done require internet.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   FlatList,
@@ -20,6 +20,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -34,6 +35,12 @@ export default function DashboardScreen({ navigation }: Props) {
   const [tasks, setTasks] = useState<CachedTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [role, setRole] = useState<string>('');
+
+  // Read role once on mount — determines header title for N1/N2 verification
+  useEffect(() => {
+    AsyncStorage.getItem('role').then((r) => setRole(r ?? ''));
+  }, []);
 
   // Law 1 — Pull on Focus: always fetch fresh data when screen comes to foreground
   useFocusEffect(
@@ -89,7 +96,9 @@ export default function DashboardScreen({ navigation }: Props) {
       <OfflineBanner />
 
       <View style={styles.header}>
-        <Text style={styles.title}>Today's Tasks</Text>
+        <Text style={styles.title}>
+          {role === 'store_manager' ? 'Store Dashboard' : 'My Tasks'}
+        </Text>
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.uploadButton}
