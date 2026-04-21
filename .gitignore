@@ -49,3 +49,5 @@ Thumbs.db
 !CLAUDE.md
 !backend/config/sap_column_map.json
 !backend/.env.example
+!.env.example
+!mobile/.env.example
