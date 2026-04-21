@@ -27,7 +27,7 @@ import {
 // Real API calls are preserved — flip to false to connect to backend.
 // ---------------------------------------------------------------------------
 
-export const DEV_MODE = true;
+export const DEV_MODE = false;
 
 // ---------------------------------------------------------------------------
 // Constants

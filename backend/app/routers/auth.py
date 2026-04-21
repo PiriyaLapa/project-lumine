@@ -58,7 +58,7 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
     staff = staff_repo.get_by_email(db, body.email)
 
     if not staff or not AuthService.verify_password(body.password, staff.hashed_password):
-        logger.warning("Failed login attempt for email: %s", body.email)
+        logger.warning("Failed login attempt — invalid credentials.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",

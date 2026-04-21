@@ -1,7 +1,10 @@
 /**
  * LoginScreen — email + password → JWT token pair.
- * On success: stores tokens, navigates to Dashboard.
+ * On success: stores access_token, refresh_token, staff_id, role → navigates to Dashboard.
  * Field names match openapi.yaml LoginRequest + AuthResponse exactly.
+ *
+ * Error display: inline text, never Alert.alert.
+ * 401 → credential message. No network → connectivity message.
  */
 
 import React, { useState } from 'react';
@@ -11,14 +14,13 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import client from '../api/client';
-import { tokenStorage } from '../api/client';
+import client, { tokenStorage } from '../api/client';
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, 'Login'> };
 
@@ -26,10 +28,13 @@ export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
+    setError('');
+
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter email and password.');
+      setError('Please enter your email and password.');
       return;
     }
 
@@ -37,13 +42,22 @@ export default function LoginScreen({ navigation }: Props) {
     try {
       // Field names match openapi.yaml LoginRequest
       const response = await client.post('/api/v1/auth/login', { email, password });
-      const { access_token, refresh_token } = response.data;
+      const { access_token, refresh_token, staff_id, role } = response.data;
 
+      // Store all 4 values — access/refresh via tokenStorage, id/role directly
       await tokenStorage.setTokens(access_token, refresh_token);
+      await AsyncStorage.setItem('staff_id', String(staff_id));
+      await AsyncStorage.setItem('role', role);
+
       navigation.replace('Dashboard');
-    } catch (error: any) {
-      const message = error.response?.data?.detail ?? 'Login failed. Please try again.';
-      Alert.alert('Login Failed', message);
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        setError('Invalid email or password.');
+      } else if (err.response) {
+        setError(err.response.data?.detail ?? 'Login failed. Please try again.');
+      } else {
+        setError('Cannot connect to server. Check your network connection.');
+      }
     } finally {
       setLoading(false);
     }
@@ -77,12 +91,20 @@ export default function LoginScreen({ navigation }: Props) {
           secureTextEntry
         />
 
+        {error !== '' && (
+          <Text style={styles.errorText}>{error}</Text>
+        )}
+
         <TouchableOpacity
           style={[styles.button, loading && styles.disabled]}
           onPress={handleLogin}
           disabled={loading}
         >
           <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.forgotButton} disabled>
+          <Text style={styles.forgotText}>Forgot password? Contact your manager.</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -102,7 +124,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 14,
   },
+  errorText: {
+    color: '#f87171',
+    fontSize: 13,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
   button: { backgroundColor: '#6366f1', borderRadius: 8, padding: 16, alignItems: 'center', marginTop: 8 },
   disabled: { opacity: 0.5 },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  forgotButton: { marginTop: 16, alignItems: 'center' },
+  forgotText: { color: '#475569', fontSize: 13 },
 });

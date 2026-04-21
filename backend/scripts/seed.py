@@ -7,8 +7,9 @@ Usage:
     .venv/bin/python scripts/seed.py
 
 Creates:
-    - 1 store_manager  (manager@lumine.com  / manager123)
-    - 2 sales_associates (alice@lumine.com / alice123, benz@lumine.com / benz123)
+    - 1 store_manager    (manager@lumine.test    / password123)
+    - 2 sales_associates (associate1@lumine.test / password123,
+                          associate2@lumine.test / password123)
 
 Safe to re-run — skips existing records by email.
 """
@@ -27,24 +28,24 @@ SEED_STAFF = [
         "employee_code": "MGR001",
         "role": "store_manager",
         "store_id": 1,
-        "email": "manager@lumine.com",
-        "password": "manager123",
+        "email": "manager@lumine.test",
+        "password": "password123",
     },
     {
-        "name": "Alice",
+        "name": "Associate One",
         "employee_code": "EMP001",
         "role": "sales_associate",
         "store_id": 1,
-        "email": "alice@lumine.com",
-        "password": "alice123",
+        "email": "associate1@lumine.test",
+        "password": "password123",
     },
     {
-        "name": "Benz",
+        "name": "Associate Two",
         "employee_code": "EMP002",
         "role": "sales_associate",
         "store_id": 1,
-        "email": "benz@lumine.com",
-        "password": "benz123",
+        "email": "associate2@lumine.test",
+        "password": "password123",
     },
 ]
 
