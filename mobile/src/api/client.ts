@@ -200,6 +200,10 @@ client.interceptors.response.use(
 
     // Only attempt refresh once per request — prevents infinite retry loops
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Auth endpoints must never trigger a refresh attempt
+      if (originalRequest.url?.includes('/auth/')) {
+        return Promise.reject(error);
+      }
       originalRequest._retry = true;
 
       try {
