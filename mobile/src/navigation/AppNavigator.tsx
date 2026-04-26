@@ -4,8 +4,8 @@
  * SRS §7 NFR-02: refresh_token expired → force logout → redirect to login.
  */
 
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useState, useRef } from 'react';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import LoginScreen from '../screens/LoginScreen';
@@ -34,6 +34,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
 
   // Check for existing token on app start
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function AppNavigator() {
   // Listen for forced logout (refresh token expired)
   useEffect(() => {
     const unsubscribe = authEvents.onLogout(() => {
+      navigationRef.current?.reset({ index: 0, routes: [{ name: 'Login' }] });
       setIsAuthenticated(false);
     });
     return unsubscribe;
@@ -54,7 +56,7 @@ export default function AppNavigator() {
   if (isAuthenticated === null) return null;
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName={isAuthenticated ? 'Dashboard' : 'Login'}
         screenOptions={{ headerShown: false }}

@@ -15,7 +15,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import * as DocumentPicker from 'react-native-document-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import client from '../api/client';
@@ -35,18 +35,14 @@ export default function UploadScreen({ navigation }: Props) {
   const [result, setResult] = useState<UploadResult | null>(null);
 
   const pickAndUpload = async () => {
-    let file: any;
-    try {
-      const picked = await DocumentPicker.pickSingle({
-        type: [DocumentPicker.types.csv, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-      });
-      file = picked;
-    } catch (err) {
-      if (!DocumentPicker.isCancel(err)) {
-        Alert.alert('Error', 'Could not open file picker.');
-      }
-      return;
-    }
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+      copyToCacheDirectory: true,
+    });
+
+    if (result.canceled) return;
+
+    const file = result.assets[0];
 
     setUploading(true);
     setResult(null);
@@ -55,7 +51,7 @@ export default function UploadScreen({ navigation }: Props) {
       const formData = new FormData();
       formData.append('file', {
         uri: file.uri,
-        type: file.type ?? 'text/csv',
+        type: file.mimeType ?? 'text/csv',
         name: file.name ?? 'upload.csv',
       } as any);
 

@@ -24,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import client from '../api/client';
+import client, { tokenStorage, authEvents } from '../api/client';
 import { offlineCache, CachedTask } from '../cache/offlineCache';
 import TaskCard from '../components/TaskCard';
 import OfflineBanner from '../components/OfflineBanner';
@@ -89,6 +89,12 @@ export default function DashboardScreen({ navigation }: Props) {
     }
   };
 
+  const handleLogout = async () => {
+    await tokenStorage.clearTokens();
+    await AsyncStorage.multiRemove(['staff_id', 'role']);
+    authEvents.emit('logout');
+  };
+
   const pendingTasks = tasks.filter((t) => t.status === 'Pending');
 
   return (
@@ -105,6 +111,9 @@ export default function DashboardScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('Upload')}
           >
             <Text style={styles.uploadText}>Upload SAP</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -156,6 +165,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   uploadText: { color: '#f1f5f9', fontSize: 13, fontWeight: '600' },
+  logoutButton: {
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  logoutText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
   list: { padding: 16, paddingTop: 0 },
   empty: { color: '#64748b', textAlign: 'center', marginTop: 60, fontSize: 16 },
 });
