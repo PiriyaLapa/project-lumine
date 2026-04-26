@@ -31,7 +31,10 @@ No SQL in services/ or routers/.
 Services → Repositories → MySQL. Never skip a layer.
 
 ### Auth Rules
-JWT required on all endpoints except POST /api/v1/auth/login
+JWT required on all endpoints except:
+- POST /api/v1/auth/login
+- POST /api/v1/auth/register
+- GET /api/v1/stores
 Staff can only access their own data (staff_id from JWT, never from request body).
 Manager role can access all staff data within their store_id.
 
@@ -43,6 +46,15 @@ Log all 4xx and 5xx errors with: endpoint, staff_id, timestamp, error detail.
 ### Git Flow
 feat/ → develop → main
 Commits: feat: · fix: · test: · docs:
+
+### Feature Branch Strategy
+- All new features must be developed on feature/* branches
+- Branch naming: feature/<feature-name>
+- Never commit unfinished features directly to develop
+- Merge to develop only when:
+  a) All tests pass
+  b) Feature works end to end on emulator
+  c) Architect gives explicit confirmation to merge
 
 ## Current Phase
 Phase 1 — Foundation

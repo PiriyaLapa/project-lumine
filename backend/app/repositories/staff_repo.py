@@ -29,6 +29,31 @@ def get_by_id(db: Session, staff_id: int) -> Staff | None:
     )
 
 
+def create_staff(
+    db: Session,
+    *,
+    name: str,
+    email: str,
+    hashed_password: str,
+    role: str,
+    store_id: int,
+    employee_code: str,
+) -> Staff:
+    """Insert a new staff record and return the saved instance."""
+    staff = Staff(
+        name=name,
+        email=email,
+        hashed_password=hashed_password,
+        role=role,
+        store_id=store_id,
+        employee_code=employee_code,
+    )
+    db.add(staff)
+    db.commit()
+    db.refresh(staff)
+    return staff
+
+
 def get_by_employee_code(db: Session, employee_code: str) -> Staff | None:
     """Return active staff by SAP employee_code."""
     return (

@@ -14,6 +14,7 @@ import TaskDetailScreen from '../screens/TaskDetailScreen';
 import EvidenceScreen from '../screens/EvidenceScreen';
 import BarcodeScreen from '../screens/BarcodeScreen';
 import UploadScreen from '../screens/UploadScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 
 import { tokenStorage, authEvents } from '../api/client';
 
@@ -23,6 +24,7 @@ import { tokenStorage, authEvents } from '../api/client';
 
 export type RootStackParamList = {
   Login: undefined;
+  Register: undefined;
   Dashboard: undefined;
   TaskDetail: { taskId: number };
   Evidence: { taskId: number };
@@ -62,6 +64,7 @@ export default function AppNavigator() {
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
         <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
         <Stack.Screen name="Evidence" component={EvidenceScreen} />

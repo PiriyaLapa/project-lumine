@@ -7,7 +7,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, upload, tasks, evidence, reports
+from app.routers import auth, upload, tasks, evidence, reports, stores
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,6 +32,7 @@ app.add_middleware(
 
 # Routers
 app.include_router(auth.router)
+app.include_router(stores.router)
 app.include_router(upload.router)
 app.include_router(tasks.router)
 app.include_router(evidence.router)
