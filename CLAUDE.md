@@ -34,7 +34,9 @@ Services → Repositories → MySQL. Never skip a layer.
 JWT required on all endpoints except:
 - POST /api/v1/auth/login
 - POST /api/v1/auth/register
+- POST /api/v1/auth/refresh  (validates refresh token internally — no Bearer header)
 - GET /api/v1/stores
+- GET /health  (ops probe — no auth, not in openapi.yaml)
 Staff can only access their own data (staff_id from JWT, never from request body).
 Manager role can access all staff data within their store_id.
 
