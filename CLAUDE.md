@@ -59,14 +59,13 @@ Commits: feat: · fix: · test: · docs:
   c) Architect gives explicit confirmation to merge
 
 ## Current Phase
-Phase 1 — Foundation
-1. FastAPI structure from SRS Section 11 exactly
-2. MySQL schema from ERD Section 4.1
-3. sap_column_map.json with sample mappings
-4. SAP Parser with TDD (test_sap_parser.py + test_column_mapping.py)
-5. JWT auth service with TDD (test_auth_service.py)
+Phases 1–7 complete. Deployed.
 
-Do NOT start Phase 2 without architect confirmation.
+- Backend: https://lumine-api-qi77.onrender.com (Render free + TiDB Cloud free)
+- Mobile: APK v1.5.0 installed and verified on Benz's phone (Stage 4 ✅)
+- Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
+
+114/114 tests pass. Tagged v1.5.0 on develop.
 
 ## Tech Stack
 Backend: Python FastAPI + SQLAlchemy + MySQL
