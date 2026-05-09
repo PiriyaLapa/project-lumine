@@ -104,3 +104,17 @@ class TestColumnMappingConfig:
             parser = SAPParser.__new__(SAPParser)
             with pytest.raises(RuntimeError, match="sap_column_map"):
                 parser._load_column_map()
+
+    def test_real_config_file_loads_from_correct_path(self):
+        """SAP_COLUMN_MAP_PATH resolves to the real file — catches one-dot-too-many regressions."""
+        import os
+        from app.config import settings
+
+        assert os.path.exists(settings.SAP_COLUMN_MAP_PATH), (
+            f"sap_column_map.json not found at resolved path: {settings.SAP_COLUMN_MAP_PATH}. "
+            "Check SAP_COLUMN_MAP_PATH in config.py — likely a wrong number of '..' levels."
+        )
+        parser = SAPParser.__new__(SAPParser)
+        loaded = parser._load_column_map()
+        assert "mappings" in loaded
+        assert "required_internal_fields" in loaded

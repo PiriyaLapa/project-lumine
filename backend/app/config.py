@@ -29,7 +29,7 @@ class Settings:
         "GOOGLE_DRIVE_CREDENTIALS_FILE", "credentials.json"
     )
     SAP_COLUMN_MAP_PATH: str = os.path.join(
-        os.path.dirname(__file__), "..", "..", "config", "sap_column_map.json"
+        os.path.dirname(__file__), "..", "config", "sap_column_map.json"
     )
     MAX_IMAGE_SIZE_KB: int = 800
     MAX_IMAGE_DIMENSION: int = 1280
