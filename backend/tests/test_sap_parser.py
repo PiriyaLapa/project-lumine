@@ -287,3 +287,26 @@ class TestSAPParser:
         file = make_csv([VALID_ROW])
         result = parser.parse(file, filename="test.csv")
         assert result.records[0]["material_desc"] == "Luxury Bag"
+
+    def test_duplicate_idoc_numbers_deduplicated_keep_first(self):
+        """SAP exports have one row per line item — multiple rows with same IDoc collapse to first."""
+        row1 = {**VALID_ROW, "IDoc Number": "IDOC001", "EAN": "111"}  # first line item
+        row2 = {**VALID_ROW, "IDoc Number": "IDOC001", "EAN": "222"}  # same IDoc — should be dropped
+        row3 = {**VALID_ROW, "IDoc Number": "IDOC002", "EAN": "333"}  # different IDoc — kept
+        parser = self._make_parser()
+        file = make_csv([row1, row2, row3])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 2
+        assert result.records[0]["idoc_number"] == "IDOC001"
+        assert result.records[0]["ean"] == "111"          # first row's EAN preserved
+        assert result.records[1]["idoc_number"] == "IDOC002"
+
+    def test_all_unique_idocs_kept(self):
+        """No deduplication applied when all IDoc numbers are unique."""
+        row1 = {**VALID_ROW, "IDoc Number": "IDOC001"}
+        row2 = {**VALID_ROW, "IDoc Number": "IDOC002"}
+        row3 = {**VALID_ROW, "IDoc Number": "IDOC003"}
+        parser = self._make_parser()
+        file = make_csv([row1, row2, row3])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 3

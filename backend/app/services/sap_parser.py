@@ -59,7 +59,9 @@ class SAPParser:
         df = self._remap_columns(df)
         self._assert_required_columns(df)
         df = self._filter_by_sales_rep(df)
-        return self._validate_rows(df)
+        result = self._validate_rows(df)
+        result.records = self._deduplicate_by_idoc(result.records)
+        return result
 
     # ------------------------------------------------------------------
     # Step 1 — read file
@@ -178,6 +180,18 @@ class SAPParser:
             if pd.isna(val) or str(val).strip() == "":
                 errors.append(f"Row {idx}: '{field_name}' is blank or missing.")
         return errors
+
+    @staticmethod
+    def _deduplicate_by_idoc(records: list[dict]) -> list[dict]:
+        """Keep first row per idoc_number — SAP exports have one row per line item, Lumine needs one per transaction."""
+        seen: set[str] = set()
+        deduped = []
+        for record in records:
+            idoc = record["idoc_number"]
+            if idoc not in seen:
+                seen.add(idoc)
+                deduped.append(record)
+        return deduped
 
     @staticmethod
     def _normalize_employee_code(val) -> str:
