@@ -122,7 +122,8 @@ class SAPParser:
         if "staff_employee_code" not in df.columns:
             raise SAPParseError("staff_employee_code column missing after remapping.")
 
-        filtered = df[df["staff_employee_code"].astype(str).str.strip() == self.staff_employee_code]
+        normalized = df["staff_employee_code"].map(self._normalize_employee_code)
+        filtered = df[normalized == self._normalize_employee_code(self.staff_employee_code)]
 
         if filtered.empty:
             raise SAPParseError(
@@ -156,7 +157,7 @@ class SAPParser:
                 "customer_id": str(row["customer_id"]).strip(),
                 "idoc_number": str(row["idoc_number"]).strip(),
                 "posting_date": self._parse_date(row["posting_date"]),
-                "staff_employee_code": str(row["staff_employee_code"]).strip(),
+                "staff_employee_code": self._normalize_employee_code(row["staff_employee_code"]),
             }
 
             # Optional fields
@@ -177,6 +178,15 @@ class SAPParser:
             if pd.isna(val) or str(val).strip() == "":
                 errors.append(f"Row {idx}: '{field_name}' is blank or missing.")
         return errors
+
+    @staticmethod
+    def _normalize_employee_code(val) -> str:
+        """Normalize SAP employee codes: Excel stores numbers as floats ('56546.0' → '56546')."""
+        s = str(val).strip()
+        try:
+            return str(int(float(s)))
+        except (ValueError, OverflowError):
+            return s
 
     @staticmethod
     def _parse_date(value) -> date:

@@ -235,3 +235,21 @@ class TestSAPParser:
         parser = self._make_parser()
         result = parser.parse(buf, filename="test.xlsx")
         assert len(result.records) == 1
+
+    def test_float_employee_code_matches_int_string(self):
+        """Excel reads numeric Sales Rep codes as floats: '56546.0' must match '56546'."""
+        float_row = {**VALID_ROW, "Sales Rep": 56546.0}  # Excel stores numbers as float
+        parser = self._make_parser(employee_code="56546")
+        file = make_csv([float_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["staff_employee_code"] == "56546"
+
+    def test_integer_string_employee_code_still_matches(self):
+        """'56546' (clean string) still matches employee_code '56546' — no regression."""
+        clean_row = {**VALID_ROW, "Sales Rep": "56546"}
+        parser = self._make_parser(employee_code="56546")
+        file = make_csv([clean_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["staff_employee_code"] == "56546"
