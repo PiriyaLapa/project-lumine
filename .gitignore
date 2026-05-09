@@ -52,3 +52,4 @@ Thumbs.db
 !backend/.env.example
 !.env.example
 !mobile/.env.example
+docs/samples/
