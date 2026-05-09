@@ -154,15 +154,15 @@ class SAPParser:
                 continue
 
             record = {
-                "customer_id": str(row["customer_id"]).strip(),
-                "idoc_number": str(row["idoc_number"]).strip(),
+                "customer_id": self._normalize_employee_code(row["customer_id"]),
+                "idoc_number": self._normalize_employee_code(row["idoc_number"]),
                 "posting_date": self._parse_date(row["posting_date"]),
                 "staff_employee_code": self._normalize_employee_code(row["staff_employee_code"]),
             }
 
             # Optional fields
             if "ean" in df.columns:
-                record["ean"] = str(row["ean"]).strip() if pd.notna(row.get("ean")) else None
+                record["ean"] = self._normalize_employee_code(row["ean"]) if pd.notna(row.get("ean")) else None
             if "material_desc" in df.columns:
                 record["material_desc"] = str(row["material_desc"]).strip() if pd.notna(row.get("material_desc")) else None
 
@@ -181,7 +181,7 @@ class SAPParser:
 
     @staticmethod
     def _normalize_employee_code(val) -> str:
-        """Normalize SAP employee codes: Excel stores numbers as floats ('56546.0' → '56546')."""
+        """Normalize SAP numeric fields: Excel stores numbers as floats ('56546.0' → '56546')."""
         s = str(val).strip()
         try:
             return str(int(float(s)))

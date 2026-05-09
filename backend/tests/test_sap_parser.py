@@ -238,7 +238,7 @@ class TestSAPParser:
 
     def test_float_employee_code_matches_int_string(self):
         """Excel reads numeric Sales Rep codes as floats: '56546.0' must match '56546'."""
-        float_row = {**VALID_ROW, "Sales Rep": 56546.0}  # Excel stores numbers as float
+        float_row = {**VALID_ROW, "Sales Rep": 56546.0}
         parser = self._make_parser(employee_code="56546")
         file = make_csv([float_row])
         result = parser.parse(file, filename="test.csv")
@@ -253,3 +253,37 @@ class TestSAPParser:
         result = parser.parse(file, filename="test.csv")
         assert len(result.records) == 1
         assert result.records[0]["staff_employee_code"] == "56546"
+
+    def test_float_customer_id_normalized(self):
+        """Excel float customer_id '403.0' is stored as '403' — prevents duplicate IDs on re-upload."""
+        float_row = {**VALID_ROW, "Customer": 403.0}
+        parser = self._make_parser()
+        file = make_csv([float_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["customer_id"] == "403"
+
+    def test_float_idoc_number_normalized(self):
+        """Excel float idoc_number '1593837304.0' is stored as '1593837304' — primary key integrity."""
+        float_row = {**VALID_ROW, "IDoc Number": 1593837304.0}
+        parser = self._make_parser()
+        file = make_csv([float_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["idoc_number"] == "1593837304"
+
+    def test_float_ean_normalized(self):
+        """Excel float EAN '2140000019706.0' is stored as '2140000019706'."""
+        float_row = {**VALID_ROW, "EAN": 2140000019706.0}
+        parser = self._make_parser()
+        file = make_csv([float_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["ean"] == "2140000019706"
+
+    def test_non_numeric_fields_unchanged(self):
+        """String fields like material_desc are not affected by float normalization."""
+        parser = self._make_parser()
+        file = make_csv([VALID_ROW])
+        result = parser.parse(file, filename="test.csv")
+        assert result.records[0]["material_desc"] == "Luxury Bag"
