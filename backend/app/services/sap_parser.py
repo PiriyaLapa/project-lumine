@@ -59,7 +59,9 @@ class SAPParser:
         df = self._remap_columns(df)
         self._assert_required_columns(df)
         df = self._filter_by_sales_rep(df)
-        return self._validate_rows(df)
+        result = self._validate_rows(df)
+        result.records = self._deduplicate_by_idoc(result.records)
+        return result
 
     # ------------------------------------------------------------------
     # Step 1 — read file
@@ -122,7 +124,8 @@ class SAPParser:
         if "staff_employee_code" not in df.columns:
             raise SAPParseError("staff_employee_code column missing after remapping.")
 
-        filtered = df[df["staff_employee_code"].astype(str).str.strip() == self.staff_employee_code]
+        normalized = df["staff_employee_code"].map(self._normalize_employee_code)
+        filtered = df[normalized == self._normalize_employee_code(self.staff_employee_code)]
 
         if filtered.empty:
             raise SAPParseError(
@@ -153,15 +156,15 @@ class SAPParser:
                 continue
 
             record = {
-                "customer_id": str(row["customer_id"]).strip(),
-                "idoc_number": str(row["idoc_number"]).strip(),
+                "customer_id": self._normalize_employee_code(row["customer_id"]),
+                "idoc_number": self._normalize_employee_code(row["idoc_number"]),
                 "posting_date": self._parse_date(row["posting_date"]),
-                "staff_employee_code": str(row["staff_employee_code"]).strip(),
+                "staff_employee_code": self._normalize_employee_code(row["staff_employee_code"]),
             }
 
             # Optional fields
             if "ean" in df.columns:
-                record["ean"] = str(row["ean"]).strip() if pd.notna(row.get("ean")) else None
+                record["ean"] = self._normalize_employee_code(row["ean"]) if pd.notna(row.get("ean")) else None
             if "material_desc" in df.columns:
                 record["material_desc"] = str(row["material_desc"]).strip() if pd.notna(row.get("material_desc")) else None
 
@@ -177,6 +180,27 @@ class SAPParser:
             if pd.isna(val) or str(val).strip() == "":
                 errors.append(f"Row {idx}: '{field_name}' is blank or missing.")
         return errors
+
+    @staticmethod
+    def _deduplicate_by_idoc(records: list[dict]) -> list[dict]:
+        """Keep first row per idoc_number — SAP exports have one row per line item, Lumine needs one per transaction."""
+        seen: set[str] = set()
+        deduped = []
+        for record in records:
+            idoc = record["idoc_number"]
+            if idoc not in seen:
+                seen.add(idoc)
+                deduped.append(record)
+        return deduped
+
+    @staticmethod
+    def _normalize_employee_code(val) -> str:
+        """Normalize SAP numeric fields: Excel stores numbers as floats ('56546.0' → '56546')."""
+        s = str(val).strip()
+        try:
+            return str(int(float(s)))
+        except (ValueError, OverflowError):
+            return s
 
     @staticmethod
     def _parse_date(value) -> date:

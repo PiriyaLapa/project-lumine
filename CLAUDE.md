@@ -31,7 +31,12 @@ No SQL in services/ or routers/.
 Services → Repositories → MySQL. Never skip a layer.
 
 ### Auth Rules
-JWT required on all endpoints except POST /api/v1/auth/login
+JWT required on all endpoints except:
+- POST /api/v1/auth/login
+- POST /api/v1/auth/register
+- POST /api/v1/auth/refresh  (validates refresh token internally — no Bearer header)
+- GET /api/v1/stores
+- GET /health  (ops probe — no auth, not in openapi.yaml)
 Staff can only access their own data (staff_id from JWT, never from request body).
 Manager role can access all staff data within their store_id.
 
@@ -44,15 +49,23 @@ Log all 4xx and 5xx errors with: endpoint, staff_id, timestamp, error detail.
 feat/ → develop → main
 Commits: feat: · fix: · test: · docs:
 
-## Current Phase
-Phase 1 — Foundation
-1. FastAPI structure from SRS Section 11 exactly
-2. MySQL schema from ERD Section 4.1
-3. sap_column_map.json with sample mappings
-4. SAP Parser with TDD (test_sap_parser.py + test_column_mapping.py)
-5. JWT auth service with TDD (test_auth_service.py)
+### Feature Branch Strategy
+- All new features must be developed on feature/* branches
+- Branch naming: feature/<feature-name>
+- Never commit unfinished features directly to develop
+- Merge to develop only when:
+  a) All tests pass
+  b) Feature works end to end on emulator
+  c) Architect gives explicit confirmation to merge
 
-Do NOT start Phase 2 without architect confirmation.
+## Current Phase
+Phases 1–7 complete. Deployed.
+
+- Backend: https://lumine-api-qi77.onrender.com (Render free + TiDB Cloud free)
+- Mobile: APK v1.5.0 installed and verified on Benz's phone (Stage 4 ✅)
+- Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
+
+114/114 tests pass. Tagged v1.5.0 on develop.
 
 ## Tech Stack
 Backend: Python FastAPI + SQLAlchemy + MySQL

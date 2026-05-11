@@ -9,7 +9,7 @@
  * Offline: shows cached tasks with OfflineBanner. Upload/Done require internet.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   FlatList,
@@ -20,10 +20,11 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import client from '../api/client';
+import client, { tokenStorage, authEvents } from '../api/client';
 import { offlineCache, CachedTask } from '../cache/offlineCache';
 import TaskCard from '../components/TaskCard';
 import OfflineBanner from '../components/OfflineBanner';
@@ -34,6 +35,12 @@ export default function DashboardScreen({ navigation }: Props) {
   const [tasks, setTasks] = useState<CachedTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [role, setRole] = useState<string>('');
+
+  // Read role once on mount — determines header title for N1/N2 verification
+  useEffect(() => {
+    AsyncStorage.getItem('role').then((r) => setRole(r ?? ''));
+  }, []);
 
   // Law 1 — Pull on Focus: always fetch fresh data when screen comes to foreground
   useFocusEffect(
@@ -82,6 +89,12 @@ export default function DashboardScreen({ navigation }: Props) {
     }
   };
 
+  const handleLogout = async () => {
+    await tokenStorage.clearTokens();
+    await AsyncStorage.multiRemove(['staff_id', 'role']);
+    authEvents.emit('logout');
+  };
+
   const pendingTasks = tasks.filter((t) => t.status === 'Pending');
 
   return (
@@ -89,13 +102,18 @@ export default function DashboardScreen({ navigation }: Props) {
       <OfflineBanner />
 
       <View style={styles.header}>
-        <Text style={styles.title}>Today's Tasks</Text>
+        <Text style={styles.title}>
+          {role === 'store_manager' ? 'Store Dashboard' : 'My Tasks'}
+        </Text>
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.uploadButton}
             onPress={() => navigation.navigate('Upload')}
           >
             <Text style={styles.uploadText}>Upload SAP</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -147,6 +165,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   uploadText: { color: '#f1f5f9', fontSize: 13, fontWeight: '600' },
+  logoutButton: {
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  logoutText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
   list: { padding: 16, paddingTop: 0 },
   empty: { color: '#64748b', textAlign: 'center', marginTop: 60, fontSize: 16 },
 });

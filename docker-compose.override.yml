@@ -1,0 +1,20 @@
+# =============================================================================
+# Project Lumine — docker-compose.override.yml  (DEV ONLY)
+# Docker Compose merges this automatically with docker-compose.yml in dev.
+# Do NOT use in production — volume mount disables the built image's code.
+#
+# What this adds:
+#   - Volume mount: ./backend → /app  (code changes apply without rebuild)
+#   - --reload flag on uvicorn        (hot reload on file save)
+#   - ENVIRONMENT=development         (backend can branch on this if needed)
+# =============================================================================
+
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+    environment:
+      ENVIRONMENT: development
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"

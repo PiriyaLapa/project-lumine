@@ -235,3 +235,78 @@ class TestSAPParser:
         parser = self._make_parser()
         result = parser.parse(buf, filename="test.xlsx")
         assert len(result.records) == 1
+
+    def test_float_employee_code_matches_int_string(self):
+        """Excel reads numeric Sales Rep codes as floats: '56546.0' must match '56546'."""
+        float_row = {**VALID_ROW, "Sales Rep": 56546.0}
+        parser = self._make_parser(employee_code="56546")
+        file = make_csv([float_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["staff_employee_code"] == "56546"
+
+    def test_integer_string_employee_code_still_matches(self):
+        """'56546' (clean string) still matches employee_code '56546' — no regression."""
+        clean_row = {**VALID_ROW, "Sales Rep": "56546"}
+        parser = self._make_parser(employee_code="56546")
+        file = make_csv([clean_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["staff_employee_code"] == "56546"
+
+    def test_float_customer_id_normalized(self):
+        """Excel float customer_id '403.0' is stored as '403' — prevents duplicate IDs on re-upload."""
+        float_row = {**VALID_ROW, "Customer": 403.0}
+        parser = self._make_parser()
+        file = make_csv([float_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["customer_id"] == "403"
+
+    def test_float_idoc_number_normalized(self):
+        """Excel float idoc_number '1593837304.0' is stored as '1593837304' — primary key integrity."""
+        float_row = {**VALID_ROW, "IDoc Number": 1593837304.0}
+        parser = self._make_parser()
+        file = make_csv([float_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["idoc_number"] == "1593837304"
+
+    def test_float_ean_normalized(self):
+        """Excel float EAN '2140000019706.0' is stored as '2140000019706'."""
+        float_row = {**VALID_ROW, "EAN": 2140000019706.0}
+        parser = self._make_parser()
+        file = make_csv([float_row])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 1
+        assert result.records[0]["ean"] == "2140000019706"
+
+    def test_non_numeric_fields_unchanged(self):
+        """String fields like material_desc are not affected by float normalization."""
+        parser = self._make_parser()
+        file = make_csv([VALID_ROW])
+        result = parser.parse(file, filename="test.csv")
+        assert result.records[0]["material_desc"] == "Luxury Bag"
+
+    def test_duplicate_idoc_numbers_deduplicated_keep_first(self):
+        """SAP exports have one row per line item — multiple rows with same IDoc collapse to first."""
+        row1 = {**VALID_ROW, "IDoc Number": "IDOC001", "EAN": "111"}  # first line item
+        row2 = {**VALID_ROW, "IDoc Number": "IDOC001", "EAN": "222"}  # same IDoc — should be dropped
+        row3 = {**VALID_ROW, "IDoc Number": "IDOC002", "EAN": "333"}  # different IDoc — kept
+        parser = self._make_parser()
+        file = make_csv([row1, row2, row3])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 2
+        assert result.records[0]["idoc_number"] == "IDOC001"
+        assert result.records[0]["ean"] == "111"          # first row's EAN preserved
+        assert result.records[1]["idoc_number"] == "IDOC002"
+
+    def test_all_unique_idocs_kept(self):
+        """No deduplication applied when all IDoc numbers are unique."""
+        row1 = {**VALID_ROW, "IDoc Number": "IDOC001"}
+        row2 = {**VALID_ROW, "IDoc Number": "IDOC002"}
+        row3 = {**VALID_ROW, "IDoc Number": "IDOC003"}
+        parser = self._make_parser()
+        file = make_csv([row1, row2, row3])
+        result = parser.parse(file, filename="test.csv")
+        assert len(result.records) == 3

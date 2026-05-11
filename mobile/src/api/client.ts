@@ -18,6 +18,7 @@ import {
   MOCK_REFRESH_RESPONSE,
   MOCK_TASKS,
   MOCK_UPLOAD_RESPONSE,
+  MOCK_UPLOAD_HISTORY,
   MOCK_EVIDENCE_RESPONSE,
   MOCK_KPI_REPORT,
 } from '../mock/mockData';
@@ -27,7 +28,7 @@ import {
 // Real API calls are preserved — flip to false to connect to backend.
 // ---------------------------------------------------------------------------
 
-export const DEV_MODE = true;
+export const DEV_MODE = false;
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -160,6 +161,11 @@ if (DEV_MODE) {
       return mockResponse(MOCK_EVIDENCE_RESPONSE);
     }
 
+    // GET /api/v1/upload/history
+    if (method === 'get' && url.includes('/upload/history')) {
+      return mockResponse(MOCK_UPLOAD_HISTORY);
+    }
+
     // POST /api/v1/upload
     if (method === 'post' && url.includes('/upload')) {
       return mockResponse(MOCK_UPLOAD_RESPONSE);
@@ -200,6 +206,10 @@ client.interceptors.response.use(
 
     // Only attempt refresh once per request — prevents infinite retry loops
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Auth endpoints must never trigger a refresh attempt
+      if (originalRequest.url?.includes('/auth/')) {
+        return Promise.reject(error);
+      }
       originalRequest._retry = true;
 
       try {

@@ -114,3 +114,47 @@ export const MOCK_KPI_REPORT = {
   completed_tasks: 8,
   completion_rate: 0.667,
 };
+
+// ---------------------------------------------------------------------------
+// Upload History — openapi.yaml UploadLog schema
+// ---------------------------------------------------------------------------
+
+export interface UploadLog {
+  id: number;
+  store_id: number;
+  staff_id: number;
+  filename: string;
+  uploaded_at: string;
+  row_count: number;
+  tasks_created: number;
+  date_range_start: string;
+  date_range_end: string;
+  status: 'success' | 'error';
+}
+
+export const MOCK_UPLOAD_HISTORY: UploadLog[] = [
+  {
+    id: 2,
+    store_id: 8901,
+    staff_id: 1,
+    filename: 'sap_may.csv',
+    uploaded_at: '2026-05-10T14:30:00',
+    row_count: 27,
+    tasks_created: 27,
+    date_range_start: '2026-04-01',
+    date_range_end: '2026-04-30',
+    status: 'success',
+  },
+  {
+    id: 1,
+    store_id: 8901,
+    staff_id: 1,
+    filename: 'sap_jan_mar.csv',
+    uploaded_at: '2026-04-01T09:00:00',
+    row_count: 42,
+    tasks_created: 42,
+    date_range_start: '2026-01-01',
+    date_range_end: '2026-03-31',
+    status: 'success',
+  },
+];
