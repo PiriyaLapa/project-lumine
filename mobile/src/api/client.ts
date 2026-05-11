@@ -18,6 +18,7 @@ import {
   MOCK_REFRESH_RESPONSE,
   MOCK_TASKS,
   MOCK_UPLOAD_RESPONSE,
+  MOCK_UPLOAD_HISTORY,
   MOCK_EVIDENCE_RESPONSE,
   MOCK_KPI_REPORT,
 } from '../mock/mockData';
@@ -158,6 +159,11 @@ if (DEV_MODE) {
     // POST /api/v1/evidence
     if (method === 'post' && url.includes('/evidence')) {
       return mockResponse(MOCK_EVIDENCE_RESPONSE);
+    }
+
+    // GET /api/v1/upload/history
+    if (method === 'get' && url.includes('/upload/history')) {
+      return mockResponse(MOCK_UPLOAD_HISTORY);
     }
 
     // POST /api/v1/upload

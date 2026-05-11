@@ -14,6 +14,7 @@ import TaskDetailScreen from '../screens/TaskDetailScreen';
 import EvidenceScreen from '../screens/EvidenceScreen';
 import BarcodeScreen from '../screens/BarcodeScreen';
 import UploadScreen from '../screens/UploadScreen';
+import UploadHistoryScreen from '../screens/UploadHistoryScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 
 import { tokenStorage, authEvents } from '../api/client';
@@ -30,6 +31,7 @@ export type RootStackParamList = {
   Evidence: { taskId: number };
   Barcode: { customer_id: string };   // LOCKED field name from openapi.yaml
   Upload: undefined;
+  UploadHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -70,6 +72,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Evidence" component={EvidenceScreen} />
         <Stack.Screen name="Barcode" component={BarcodeScreen} />
         <Stack.Screen name="Upload" component={UploadScreen} />
+        <Stack.Screen name="UploadHistory" component={UploadHistoryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
