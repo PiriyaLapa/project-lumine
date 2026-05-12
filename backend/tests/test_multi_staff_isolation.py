@@ -48,7 +48,7 @@ class TestAssociateIsolation:
     def test_associate_gets_own_tasks(self):
         """GET /tasks for a sales_associate calls get_tasks_for_staff with their staff_id."""
         token = make_token(staff_id=10, role="sales_associate", store_id=1)
-        tasks = [make_task(1), make_task(2)]
+        tasks = [(make_task(1), "Benz"), (make_task(2), "Benz")]
 
         with patch("app.routers.tasks.task_repo") as mock_repo:
             mock_repo.get_tasks_for_staff.return_value = tasks
@@ -103,7 +103,7 @@ class TestManagerAccess:
     def test_manager_gets_all_store_tasks(self):
         """GET /tasks for a store_manager calls get_tasks_for_store with their store_id."""
         token = make_token(staff_id=1, role="store_manager", store_id=7)
-        tasks = [make_task(1), make_task(2), make_task(3)]
+        tasks = [(make_task(1), "Benz"), (make_task(2), "Ann"), (make_task(3), "Benz")]
 
         with patch("app.routers.tasks.task_repo") as mock_repo:
             mock_repo.get_tasks_for_store.return_value = tasks
@@ -141,6 +141,7 @@ class TestManagerAccess:
         with patch("app.routers.tasks.task_repo") as mock_repo:
             mock_repo.get_by_id.return_value = task
             mock_repo.mark_done.return_value = updated_task
+            mock_repo.get_staff_name_for_task.return_value = "Benz"
             client = TestClient(app)
             resp = client.patch(
                 "/api/v1/tasks/55",

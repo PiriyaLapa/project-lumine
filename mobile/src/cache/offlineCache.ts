@@ -20,6 +20,7 @@ export interface CachedTask {
   due_date: string;
   calculated_from: string;
   status: 'Pending' | 'Done' | 'Superseded';
+  staff_name: string | null;  // null for tasks uploaded before migration 0005
   created_at: string;
   updated_at: string;
 }

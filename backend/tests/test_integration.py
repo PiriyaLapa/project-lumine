@@ -148,7 +148,7 @@ class TestTasksEndpoint:
 
         task = make_task()
         with patch("app.routers.tasks.task_repo") as mock_repo:
-            mock_repo.get_tasks_for_staff.return_value = [task]
+            mock_repo.get_tasks_for_staff.return_value = [(task, "Benz")]
             resp = client.get("/api/v1/tasks", headers=bearer())
 
         app.dependency_overrides.clear()
@@ -158,7 +158,8 @@ class TestTasksEndpoint:
         assert isinstance(data, list)
         assert len(data) == 1
         for field in ["id", "customer_id", "task_type", "task_basis",
-                      "due_date", "calculated_from", "status", "created_at", "updated_at"]:
+                      "due_date", "calculated_from", "status", "staff_name",
+                      "created_at", "updated_at"]:
             assert field in data[0], f"Missing field: {field}"
 
     def test_manager_gets_store_tasks(self):
@@ -168,7 +169,7 @@ class TestTasksEndpoint:
         client = TestClient(app)
 
         with patch("app.routers.tasks.task_repo") as mock_repo:
-            mock_repo.get_tasks_for_store.return_value = []
+            mock_repo.get_tasks_for_store.return_value = [(make_task(), "Benz")]
             resp = client.get("/api/v1/tasks", headers=bearer(role="store_manager", staff_id=2))
 
             mock_repo.get_tasks_for_store.assert_called_once()
@@ -216,6 +217,7 @@ class TestTaskPatchEndpoint:
         with patch("app.routers.tasks.task_repo") as mock_repo:
             mock_repo.get_by_id.return_value = task
             mock_repo.mark_done.return_value = done_task
+            mock_repo.get_staff_name_for_task.return_value = "Benz"
             resp = client.patch(
                 "/api/v1/tasks/1",
                 json={"status": "Done"},

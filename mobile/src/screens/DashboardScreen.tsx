@@ -19,6 +19,7 @@ import {
   Alert,
   RefreshControl,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -36,6 +37,7 @@ export default function DashboardScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [role, setRole] = useState<string>('');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   // Read role once on mount — determines header title for N1/N2 verification
   useEffect(() => {
@@ -96,6 +98,12 @@ export default function DashboardScreen({ navigation }: Props) {
   };
 
   const pendingTasks = tasks.filter((t) => t.status === 'Pending');
+  const uniqueStaffNames = [
+    ...new Set(pendingTasks.map((t) => t.staff_name).filter((n): n is string => !!n)),
+  ];
+  const filteredTasks = activeFilter
+    ? pendingTasks.filter((t) => t.staff_name === activeFilter)
+    : pendingTasks;
 
   return (
     <View style={styles.container}>
@@ -122,10 +130,40 @@ export default function DashboardScreen({ navigation }: Props) {
         <ActivityIndicator color="#6366f1" style={{ marginTop: 40 }} />
       ) : (
         <FlatList
-          data={pendingTasks}
+          data={filteredTasks}
           keyExtractor={(item) => String(item.id)}
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={fetchTasks} tintColor="#6366f1" />
+          }
+          ListHeaderComponent={
+            role === 'store_manager' && uniqueStaffNames.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.chipsScroll}
+                contentContainerStyle={styles.chipsContent}
+              >
+                <TouchableOpacity
+                  style={[styles.chip, activeFilter === null && styles.chipActive]}
+                  onPress={() => setActiveFilter(null)}
+                >
+                  <Text style={[styles.chipText, activeFilter === null && styles.chipTextActive]}>
+                    All
+                  </Text>
+                </TouchableOpacity>
+                {uniqueStaffNames.map((name) => (
+                  <TouchableOpacity
+                    key={name}
+                    style={[styles.chip, activeFilter === name && styles.chipActive]}
+                    onPress={() => setActiveFilter(name)}
+                  >
+                    <Text style={[styles.chipText, activeFilter === name && styles.chipTextActive]}>
+                      {name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            ) : null
           }
           renderItem={({ item }) => (
             <TaskCard
@@ -134,6 +172,7 @@ export default function DashboardScreen({ navigation }: Props) {
               task_type={item.task_type}
               due_date={item.due_date}
               status={item.status}
+              staff_name={item.staff_name}
               onPress={(id) => navigation.navigate('TaskDetail', { taskId: id })}
             />
           )}
@@ -173,4 +212,15 @@ const styles = StyleSheet.create({
   logoutText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
   list: { padding: 16, paddingTop: 0 },
   empty: { color: '#64748b', textAlign: 'center', marginTop: 60, fontSize: 16 },
+  chipsScroll: { marginBottom: 12 },
+  chipsContent: { paddingHorizontal: 16, gap: 8 },
+  chip: {
+    backgroundColor: '#334155',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+  chipActive: { backgroundColor: '#6366f1' },
+  chipText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
+  chipTextActive: { color: '#ffffff' },
 });

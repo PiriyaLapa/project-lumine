@@ -126,6 +126,7 @@ async def upload_sap_file(
                 "staff_id": current_staff.staff_id,
                 "ean": record.get("ean"),
                 "material_desc": record.get("material_desc"),
+                "sales_rep_name": record.get("sales_rep_name"),
             })
 
             reset_result = CycleReset.run(db, transaction)

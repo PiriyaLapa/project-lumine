@@ -13,6 +13,7 @@ class Transaction(Base):
     material_desc = Column(String(500), nullable=True)
     customer_id = Column(String(100), nullable=False, index=True)  # SAP code — no name stored (PDPA)
     staff_id = Column(Integer, ForeignKey("staff.id"), nullable=False, index=True)
+    sales_rep_name = Column(String(255), nullable=True)  # SAP "Sales Rep.name" — null for pre-0005 rows
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     staff = relationship("Staff", back_populates="transactions")

@@ -167,6 +167,8 @@ class SAPParser:
                 record["ean"] = self._normalize_employee_code(row["ean"]) if pd.notna(row.get("ean")) else None
             if "material_desc" in df.columns:
                 record["material_desc"] = str(row["material_desc"]).strip() if pd.notna(row.get("material_desc")) else None
+            if "sales_rep_name" in df.columns:
+                record["sales_rep_name"] = str(row["sales_rep_name"]).strip() if pd.notna(row.get("sales_rep_name")) else None
 
             result.records.append(record)
 
