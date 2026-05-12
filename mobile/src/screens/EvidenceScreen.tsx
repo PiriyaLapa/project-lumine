@@ -85,8 +85,8 @@ export default function EvidenceScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f172a' },
+  container: { flex: 1, backgroundColor: '#FAF7F2' },
   header: { padding: 20, paddingTop: 56 },
-  backText: { color: '#6366f1', fontSize: 16, marginBottom: 12 },
-  title: { fontSize: 24, fontWeight: '800', color: '#f1f5f9' },
+  backText: { color: '#C9974A', fontSize: 16, marginBottom: 12 },
+  title: { fontSize: 24, fontWeight: '800', color: '#1A1A1A' },
 });

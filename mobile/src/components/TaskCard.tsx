@@ -24,9 +24,9 @@ const TASK_TYPE_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  Pending: '#f59e0b',
-  Done: '#22c55e',
-  Superseded: '#94a3b8',
+  Pending: '#d97706',
+  Done: '#16a34a',
+  Superseded: '#9A9A9A',
 };
 
 export default function TaskCard({
@@ -66,15 +66,20 @@ export default function TaskCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#64748b',
+    borderLeftColor: '#F0EBE3',
+    shadowColor: '#C9974A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   overdue: {
-    borderLeftColor: '#ef4444',
+    borderLeftColor: '#DC2626',
   },
   header: {
     flexDirection: 'row',
@@ -83,7 +88,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   taskType: {
-    color: '#f1f5f9',
+    color: '#1A1A1A',
     fontWeight: '600',
     fontSize: 14,
     flex: 1,
@@ -99,21 +104,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   customerId: {
-    color: '#94a3b8',
+    color: '#9A9A9A',
     fontSize: 13,
     marginBottom: 2,
   },
   soldBy: {
-    color: '#64748b',
+    color: '#9A9A9A',
     fontSize: 12,
     marginBottom: 4,
   },
   dueDate: {
-    color: '#94a3b8',
+    color: '#9A9A9A',
     fontSize: 13,
   },
   overdueText: {
-    color: '#ef4444',
+    color: '#DC2626',
     fontWeight: '600',
   },
 });

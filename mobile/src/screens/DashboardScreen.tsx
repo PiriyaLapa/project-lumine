@@ -127,13 +127,13 @@ export default function DashboardScreen({ navigation }: Props) {
       </View>
 
       {loading && tasks.length === 0 ? (
-        <ActivityIndicator color="#6366f1" style={{ marginTop: 40 }} />
+        <ActivityIndicator color="#C9974A" style={{ marginTop: 40 }} />
       ) : (
         <FlatList
           data={filteredTasks}
           keyExtractor={(item) => String(item.id)}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={fetchTasks} tintColor="#6366f1" />
+            <RefreshControl refreshing={loading} onRefresh={fetchTasks} tintColor="#C9974A" />
           }
           ListHeaderComponent={
             role === 'store_manager' && uniqueStaffNames.length > 0 ? (
@@ -187,7 +187,7 @@ export default function DashboardScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f172a' },
+  container: { flex: 1, backgroundColor: '#FAF7F2' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -195,32 +195,36 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 56,
   },
-  title: { fontSize: 24, fontWeight: '800', color: '#f1f5f9' },
+  title: { fontSize: 24, fontWeight: '800', color: '#1A1A1A' },
   headerActions: { flexDirection: 'row', gap: 10 },
   uploadButton: {
-    backgroundColor: '#334155',
+    backgroundColor: '#F5F2EC',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#F0EBE3',
   },
-  uploadText: { color: '#f1f5f9', fontSize: 13, fontWeight: '600' },
+  uploadText: { color: '#1A1A1A', fontSize: 13, fontWeight: '600' },
   logoutButton: {
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  logoutText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
+  logoutText: { color: '#9A9A9A', fontSize: 13, fontWeight: '600' },
   list: { padding: 16, paddingTop: 0 },
-  empty: { color: '#64748b', textAlign: 'center', marginTop: 60, fontSize: 16 },
+  empty: { color: '#B0A898', textAlign: 'center', marginTop: 60, fontSize: 16 },
   chipsScroll: { marginBottom: 12 },
   chipsContent: { paddingHorizontal: 16, gap: 8 },
   chip: {
-    backgroundColor: '#334155',
+    backgroundColor: '#F5F2EC',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: '#F0EBE3',
   },
-  chipActive: { backgroundColor: '#6366f1' },
-  chipText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
+  chipActive: { backgroundColor: '#C9974A', borderColor: '#C9974A' },
+  chipText: { color: '#9A9A9A', fontSize: 13, fontWeight: '600' },
   chipTextActive: { color: '#ffffff' },
 });
