@@ -33,7 +33,7 @@ class FollowUpTaskResponse(BaseModel):
     due_date: date_type    # LOCKED
     calculated_from: date_type  # LOCKED
     status: str            # LOCKED: Pending | Done | Superseded
-    staff_name: str        # LOCKED — openapi.yaml FollowUpTask.staff_name
+    staff_name: str | None = None  # LOCKED — null for tasks uploaded before migration 0005
     created_at: str
     updated_at: str
 
