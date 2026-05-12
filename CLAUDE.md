@@ -62,10 +62,19 @@ Commits: feat: · fix: · test: · docs:
 Phases 1–7 complete. Deployed.
 
 - Backend: https://lumine-api-qi77.onrender.com (Render free + TiDB Cloud free)
-- Mobile: APK v1.5.0 installed and verified on Benz's phone (Stage 4 ✅)
+- Mobile: APK v1.1.0 — Upload History + conflict detection (emulator verified ✅)
 - Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
 
-114/114 tests pass. Tagged v1.5.0 on develop.
+139/139 tests pass.
+
+## APK Versioning
+Source of truth: mobile/app.json — version + versionCode.
+Do not use any other source for APK version.
+
+| APK | versionCode | Feature |
+|-----|-------------|---------|
+| v1.0.0 | 1 | Initial release |
+| v1.1.0 | 2 | Upload History + duplicate date-range conflict detection |
 
 ## Tech Stack
 Backend: Python FastAPI + SQLAlchemy + MySQL

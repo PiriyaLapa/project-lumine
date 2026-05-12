@@ -38,19 +38,12 @@ export default function EvidenceForm({ task_id, onSubmit, isSubmitting }: Eviden
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageSizeKb, setImageSizeKb] = useState<number | null>(null);
 
-  const pickAndCompressImage = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-
-    if (result.canceled) return;
-
-    const asset = result.assets[0];
+  // SRS §5 FR-04: compress to ≤ 800KB at max 1280px on longest edge.
+  // Shared by both camera and gallery paths.
+  const processAsset = async (asset: ImagePicker.ImagePickerAsset) => {
     let uri = asset.uri;
     let sizeKb = asset.fileSize ? asset.fileSize / 1024 : 0;
 
-    // SRS §5 FR-04: compress to ≤ 800KB at max 1280px on longest edge
     if (sizeKb > MAX_SIZE_KB || (asset.width ?? 0) > MAX_DIMENSION || (asset.height ?? 0) > MAX_DIMENSION) {
       try {
         const compressed = await ImageManipulator.manipulateAsync(
@@ -71,6 +64,24 @@ export default function EvidenceForm({ task_id, onSubmit, isSubmitting }: Eviden
     setImageSizeKb(Math.round(sizeKb));
   };
 
+  const handleCamera = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+    if (result.canceled) return;
+    await processAsset(result.assets[0]);
+  };
+
+  const handleGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+    if (result.canceled) return;
+    await processAsset(result.assets[0]);
+  };
+
   const handleSubmit = async () => {
     await onSubmit({ task_id, notes, imageUri, imageSizeKb });
   };
@@ -88,11 +99,18 @@ export default function EvidenceForm({ task_id, onSubmit, isSubmitting }: Eviden
         onChangeText={setNotes}
       />
 
-      <TouchableOpacity style={styles.photoButton} onPress={pickAndCompressImage}>
-        <Text style={styles.photoButtonText}>
-          {imageUri ? '📷 Retake Photo' : '📷 Take Photo'}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.photoRow}>
+        <TouchableOpacity style={styles.photoButton} onPress={handleCamera}>
+          <Text style={styles.photoButtonText}>
+            {imageUri ? '📷 Retake' : '📷 Take Photo'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.photoButton} onPress={handleGallery}>
+          <Text style={styles.photoButtonText}>
+            {imageUri ? '🖼 Change' : '🖼 Gallery'}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {imageUri && (
         <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
@@ -128,12 +146,17 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     marginBottom: 16,
   },
+  photoRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
   photoButton: {
+    flex: 1,
     backgroundColor: '#334155',
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
-    marginBottom: 12,
   },
   photoButtonText: { color: '#f1f5f9', fontSize: 15, fontWeight: '600' },
   preview: { width: '100%', height: 200, borderRadius: 8, marginBottom: 8 },
