@@ -265,8 +265,9 @@ components:
         status:                # LOCKED. Never: state, task_status
           type: string
           enum: [Pending, Done, Superseded]
-        staff_name:            # Display name of the sales associate who owns this task
+        staff_name:            # Display name of the sales associate who owns this task; null for pre-migration-0005 tasks
           type: string
+          nullable: true
         created_at:
           type: string
           format: date-time
