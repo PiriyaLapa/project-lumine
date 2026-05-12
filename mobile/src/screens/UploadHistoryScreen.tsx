@@ -89,7 +89,7 @@ export default function UploadHistoryScreen({ navigation }: Props) {
 
   const renderContent = () => {
     if (loading) {
-      return <ActivityIndicator color="#6366f1" style={styles.centered} />;
+      return <ActivityIndicator color="#C9974A" style={styles.centered} />;
     }
     if (error) {
       return (
@@ -131,7 +131,7 @@ export default function UploadHistoryScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f172a' },
+  container: { flex: 1, backgroundColor: '#FAF7F2' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -140,17 +140,22 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 4,
   },
-  backText: { color: '#6366f1', fontSize: 16 },
-  title: { fontSize: 24, fontWeight: '800', color: '#f1f5f9', paddingHorizontal: 20, marginTop: 12 },
-  subtitle: { color: '#64748b', paddingHorizontal: 20, marginTop: 6, marginBottom: 20, fontSize: 14 },
+  backText: { color: '#C9974A', fontSize: 16 },
+  title: { fontSize: 24, fontWeight: '800', color: '#1A1A1A', paddingHorizontal: 20, marginTop: 12 },
+  subtitle: { color: '#9A9A9A', paddingHorizontal: 20, marginTop: 6, marginBottom: 20, fontSize: 14 },
 
   list: { padding: 16, paddingTop: 0 },
 
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    shadowColor: '#C9974A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -159,7 +164,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   filename: {
-    color: '#f1f5f9',
+    color: '#1A1A1A',
     fontWeight: '700',
     fontSize: 15,
     flex: 1,
@@ -170,31 +175,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
   },
-  badgeSuccess: { backgroundColor: '#14532d' },
-  badgeError: { backgroundColor: '#450a0a' },
+  badgeSuccess: { backgroundColor: '#dcfce7' },
+  badgeError: { backgroundColor: '#fee2e2' },
   badgeText: { fontSize: 12, fontWeight: '600' },
-  badgeTextSuccess: { color: '#22c55e' },
-  badgeTextError: { color: '#ef4444' },
+  badgeTextSuccess: { color: '#16a34a' },
+  badgeTextError: { color: '#DC2626' },
 
-  dateRange: { color: '#94a3b8', fontSize: 13, marginBottom: 8 },
+  dateRange: { color: '#9A9A9A', fontSize: 13, marginBottom: 8 },
 
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  meta: { color: '#64748b', fontSize: 13 },
-  uploadedAt: { color: '#64748b', fontSize: 12 },
+  meta: { color: '#9A9A9A', fontSize: 13 },
+  uploadedAt: { color: '#B0A898', fontSize: 12 },
 
   centered: { marginTop: 60 },
   centeredContainer: { alignItems: 'center', marginTop: 60, paddingHorizontal: 20 },
-  errorText: { color: '#ef4444', fontSize: 14, textAlign: 'center', marginBottom: 16 },
+  errorText: { color: '#DC2626', fontSize: 14, textAlign: 'center', marginBottom: 16 },
   retryButton: {
-    backgroundColor: '#334155',
+    backgroundColor: '#F5F2EC',
     borderRadius: 8,
     paddingHorizontal: 20,
     paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#F0EBE3',
   },
-  retryText: { color: '#f1f5f9', fontSize: 14, fontWeight: '600' },
-  empty: { color: '#64748b', textAlign: 'center', marginTop: 60, fontSize: 16 },
+  retryText: { color: '#1A1A1A', fontSize: 14, fontWeight: '600' },
+  empty: { color: '#B0A898', textAlign: 'center', marginTop: 60, fontSize: 16 },
 });

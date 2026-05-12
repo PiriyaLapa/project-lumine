@@ -94,7 +94,7 @@ export default function EvidenceForm({ task_id, onSubmit, isSubmitting }: Eviden
         multiline
         numberOfLines={4}
         placeholder="Describe the follow-up interaction..."
-        placeholderTextColor="#64748b"
+        placeholderTextColor="#B0A898"
         value={notes}
         onChangeText={setNotes}
       />
@@ -135,10 +135,10 @@ export default function EvidenceForm({ task_id, onSubmit, isSubmitting }: Eviden
 
 const styles = StyleSheet.create({
   container: { padding: 16 },
-  label: { color: '#94a3b8', fontSize: 13, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
+  label: { color: '#9A9A9A', fontSize: 13, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   textInput: {
-    backgroundColor: '#1e293b',
-    color: '#f1f5f9',
+    backgroundColor: '#F5F2EC',
+    color: '#1A1A1A',
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
@@ -153,16 +153,18 @@ const styles = StyleSheet.create({
   },
   photoButton: {
     flex: 1,
-    backgroundColor: '#334155',
+    backgroundColor: '#F5F2EC',
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F0EBE3',
   },
-  photoButtonText: { color: '#f1f5f9', fontSize: 15, fontWeight: '600' },
+  photoButtonText: { color: '#1A1A1A', fontSize: 15, fontWeight: '600' },
   preview: { width: '100%', height: 200, borderRadius: 8, marginBottom: 8 },
-  sizeNote: { color: '#64748b', fontSize: 12, textAlign: 'right', marginBottom: 16 },
+  sizeNote: { color: '#B0A898', fontSize: 12, textAlign: 'right', marginBottom: 16 },
   submitButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#C9974A',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
