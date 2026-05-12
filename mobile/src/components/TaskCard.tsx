@@ -13,6 +13,7 @@ export interface TaskCardProps {
   task_type: '2D' | '2W' | '2M';  // LOCKED
   due_date: string;          // LOCKED
   status: 'Pending' | 'Done' | 'Superseded';  // LOCKED
+  staff_name: string | null; // LOCKED — null for pre-migration-0005 tasks
   onPress: (taskId: number) => void;
 }
 
@@ -34,6 +35,7 @@ export default function TaskCard({
   task_type,
   due_date,
   status,
+  staff_name,
   onPress,
 }: TaskCardProps) {
   const isOverdue =
@@ -52,6 +54,9 @@ export default function TaskCard({
         </View>
       </View>
       <Text style={styles.customerId}>Customer: {customer_id}</Text>
+      {!!staff_name && (
+        <Text style={styles.soldBy}>Sold by: {staff_name}</Text>
+      )}
       <Text style={[styles.dueDate, isOverdue && styles.overdueText]}>
         Due: {due_date}{isOverdue ? ' — OVERDUE' : ''}
       </Text>
@@ -96,6 +101,11 @@ const styles = StyleSheet.create({
   customerId: {
     color: '#94a3b8',
     fontSize: 13,
+    marginBottom: 2,
+  },
+  soldBy: {
+    color: '#64748b',
+    fontSize: 12,
     marginBottom: 4,
   },
   dueDate: {
