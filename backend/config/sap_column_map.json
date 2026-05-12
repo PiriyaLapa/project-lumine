@@ -31,6 +31,7 @@
     "SalesRep": "staff_employee_code",
     "Sales Representative": "staff_employee_code",
     "Employee Code": "staff_employee_code",
-    "Emp Code": "staff_employee_code"
+    "Emp Code": "staff_employee_code",
+    "Sales Rep.name": "sales_rep_name"
   }
 }

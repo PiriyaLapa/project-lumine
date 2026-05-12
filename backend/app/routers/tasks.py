@@ -33,6 +33,7 @@ class FollowUpTaskResponse(BaseModel):
     due_date: date_type    # LOCKED
     calculated_from: date_type  # LOCKED
     status: str            # LOCKED: Pending | Done | Superseded
+    staff_name: str        # LOCKED — openapi.yaml FollowUpTask.staff_name
     created_at: str
     updated_at: str
 
@@ -62,7 +63,7 @@ def get_tasks(
     else:
         tasks = task_repo.get_tasks_for_staff(db, current_staff.staff_id)
 
-    return [_serialize(t) for t in tasks]
+    return [_serialize(t, name) for t, name in tasks]
 
 
 @router.patch("/tasks/{task_id}", response_model=FollowUpTaskResponse)
@@ -98,8 +99,9 @@ def update_task(
     updated = task_repo.mark_done(db, task_id)
     db.commit()
 
+    staff_name = task_repo.get_staff_name_for_task(db, updated.idoc_number)
     logger.info("Task %d marked Done by staff_id=%d", task_id, current_staff.staff_id)
-    return _serialize(updated)
+    return _serialize(updated, staff_name)
 
 
 # ---------------------------------------------------------------------------
@@ -126,7 +128,7 @@ def _assert_task_ownership(db: Session, task, current_staff: TokenPayload):
         )
 
 
-def _serialize(task) -> dict:
+def _serialize(task, staff_name: str) -> dict:
     return {
         "id": task.id,
         "customer_id": task.customer_id,
@@ -135,6 +137,7 @@ def _serialize(task) -> dict:
         "due_date": task.due_date,
         "calculated_from": task.calculated_from,
         "status": task.status,
+        "staff_name": staff_name,
         "created_at": str(task.created_at),
         "updated_at": str(task.updated_at),
     }
