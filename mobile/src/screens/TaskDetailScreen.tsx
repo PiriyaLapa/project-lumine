@@ -19,6 +19,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import client from '../api/client';
 import OfflineBanner from '../components/OfflineBanner';
+import { THEME } from '../styles/theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'TaskDetail'>;
@@ -71,7 +72,7 @@ export default function TaskDetailScreen({ navigation, route }: Props) {
     }
   };
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} color="#6366f1" />;
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} color={THEME.colors.primary} />;
   if (!task) return (
     <View style={styles.container}>
       <Text style={styles.error}>Task not found.</Text>
@@ -124,20 +125,37 @@ export default function TaskDetailScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f172a' },
+  container: { flex: 1, backgroundColor: THEME.colors.background },
   back: { padding: 20, paddingTop: 56 },
-  backText: { color: '#6366f1', fontSize: 16 },
-  card: { backgroundColor: '#1e293b', margin: 16, borderRadius: 12, padding: 20 },
-  taskType: { fontSize: 20, fontWeight: '700', color: '#f1f5f9', marginBottom: 16 },
-  field: { color: '#94a3b8', fontSize: 14, marginBottom: 10 },
-  value: { color: '#f1f5f9', fontWeight: '600' },
-  done: { color: '#22c55e' },
+  backText: { color: THEME.colors.primary, fontSize: 16 },
+  card: {
+    backgroundColor: THEME.colors.card,
+    margin: 16,
+    borderRadius: THEME.radius.md,
+    padding: 20,
+    shadowColor: THEME.colors.primaryShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  taskType: { fontSize: 20, fontWeight: '700', color: THEME.colors.text, marginBottom: 16 },
+  field: { color: THEME.colors.textSecondary, fontSize: 14, marginBottom: 10 },
+  value: { color: THEME.colors.text, fontWeight: '600' },
+  done: { color: THEME.colors.success },
   actions: { padding: 16, gap: 12 },
-  doneButton: { backgroundColor: '#22c55e', borderRadius: 10, padding: 16, alignItems: 'center' },
+  doneButton: { backgroundColor: THEME.colors.primary, borderRadius: 10, padding: 16, alignItems: 'center' },
   doneText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  evidenceButton: { backgroundColor: '#6366f1', borderRadius: 10, padding: 16, alignItems: 'center' },
-  evidenceText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  barcodeButton: { backgroundColor: '#334155', borderRadius: 10, padding: 16, alignItems: 'center' },
-  barcodeText: { color: '#f1f5f9', fontSize: 16, fontWeight: '600' },
-  error: { color: '#ef4444', textAlign: 'center', marginTop: 60, fontSize: 16 },
+  evidenceButton: {
+    borderRadius: 10,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: THEME.colors.primary,
+    backgroundColor: 'transparent',
+  },
+  evidenceText: { color: THEME.colors.primary, fontSize: 16, fontWeight: '700' },
+  barcodeButton: { backgroundColor: THEME.colors.surface, borderRadius: 10, padding: 16, alignItems: 'center' },
+  barcodeText: { color: THEME.colors.text, fontSize: 16, fontWeight: '600' },
+  error: { color: THEME.colors.error, textAlign: 'center', marginTop: 60, fontSize: 16 },
 });

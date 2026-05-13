@@ -54,12 +54,12 @@ export default function TaskCard({
         </View>
       </View>
       <Text style={styles.customerId}>Customer: {customer_id}</Text>
-      {!!staff_name && (
-        <Text style={styles.soldBy}>Sold by: {staff_name}</Text>
-      )}
       <Text style={[styles.dueDate, isOverdue && styles.overdueText]}>
         Due: {due_date}{isOverdue ? ' — OVERDUE' : ''}
       </Text>
+      {!!staff_name && (
+        <Text style={styles.soldBy}>Sold by: {staff_name}</Text>
+      )}
     </TouchableOpacity>
   );
 }

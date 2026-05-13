@@ -217,14 +217,14 @@ const styles = StyleSheet.create({
   chipsScroll: { marginBottom: 12 },
   chipsContent: { paddingHorizontal: 16, gap: 8 },
   chip: {
-    backgroundColor: '#F5F2EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderWidth: 1,
-    borderColor: '#F0EBE3',
+    borderColor: '#D0C9C0',
   },
   chipActive: { backgroundColor: '#C9974A', borderColor: '#C9974A' },
-  chipText: { color: '#9A9A9A', fontSize: 13, fontWeight: '600' },
+  chipText: { color: '#1A1A1A', fontSize: 13, fontWeight: '600' },
   chipTextActive: { color: '#ffffff' },
 });
