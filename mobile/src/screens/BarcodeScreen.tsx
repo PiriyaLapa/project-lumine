@@ -12,6 +12,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import BarcodeDisplay from '../components/BarcodeDisplay';
 import OfflineBanner from '../components/OfflineBanner';
+import { THEME } from '../styles/theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Barcode'>;
@@ -38,9 +39,9 @@ export default function BarcodeScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f172a' },
+  container: { flex: 1, backgroundColor: THEME.colors.background },
   back: { padding: 20, paddingTop: 56 },
-  backText: { color: '#6366f1', fontSize: 16 },
-  title: { fontSize: 24, fontWeight: '800', color: '#f1f5f9', textAlign: 'center', marginTop: 8 },
-  subtitle: { color: '#64748b', textAlign: 'center', marginTop: 8, fontSize: 14, marginBottom: 8 },
+  backText: { color: THEME.colors.primary, fontSize: 16 },
+  title: { fontSize: 24, fontWeight: '800', color: THEME.colors.text, textAlign: 'center', marginTop: 8 },
+  subtitle: { color: '#666666', textAlign: 'center', marginTop: 8, fontSize: 14, marginBottom: 8 },
 });
