@@ -76,6 +76,31 @@ Do not use any other source for APK version.
 | v1.0.0 | 1 | Initial release |
 | v1.1.0 | 2 | Upload History + duplicate date-range conflict detection |
 
+## UI Theme Rules
+
+Primary theme is LIGHT. Dark theme is retired — never re-introduce dark values.
+
+Single source of truth: `mobile/src/styles/theme.ts` — the `THEME` object.
+
+Rules for every new screen and component:
+- Always import THEME from `mobile/src/styles/theme.ts`
+- Never use raw hex values in StyleSheet — always use THEME tokens
+- Never use dark backgrounds (navy, #1a2332, #1e2d3d, or any dark value)
+- Before committing any UI change: confirm every element references a THEME token
+- If a screen is found on dark theme — fix it in the same PR, do not leave mixed themes
+
+Quick reference:
+| What | Token |
+|------|-------|
+| Screen background | THEME.colors.background |
+| Card / panel | THEME.colors.card |
+| Gold CTA button | THEME.colors.primary |
+| Primary text | THEME.colors.text |
+| Subtitle / label | THEME.colors.textSecondary |
+| Error | THEME.colors.error |
+| Pending badge | THEME.colors.statusPending |
+| Done badge | THEME.colors.statusDone |
+
 ## Tech Stack
 Backend: Python FastAPI + SQLAlchemy + MySQL
 Mobile: React Native + TypeScript
