@@ -310,12 +310,13 @@ class TestUploadOverlapDetection:
 
         with patch("app.routers.upload.staff_repo") as mock_staff_repo, \
              patch("app.routers.upload.SAPParser") as mock_parser, \
-             patch("app.routers.upload.transaction_repo"), \
+             patch("app.routers.upload.transaction_repo") as mock_txn_repo, \
              patch("app.routers.upload.CycleReset") as mock_reset, \
              patch("app.routers.upload.upload_log_repo") as mock_log_repo:
 
             mock_staff_repo.get_by_id.return_value = staff
             mock_parser.return_value.parse.return_value = self._make_parse_result()
+            mock_txn_repo.upsert.return_value = (MagicMock(), True)
             mock_reset.run.return_value = MagicMock(tasks_created=3, cycles_reset=1)
             mock_log_repo.find_overlap.return_value = make_upload_log()
 

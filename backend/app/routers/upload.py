@@ -119,7 +119,7 @@ async def upload_sap_file(
 
     try:
         for record in parse_result.records:
-            transaction = transaction_repo.create(db, {
+            data = {
                 "idoc_number": record["idoc_number"],
                 "posting_date": record["posting_date"],
                 "customer_id": record["customer_id"],
@@ -127,12 +127,20 @@ async def upload_sap_file(
                 "ean": record.get("ean"),
                 "material_desc": record.get("material_desc"),
                 "sales_rep_name": record.get("sales_rep_name"),
-            })
+            }
 
-            reset_result = CycleReset.run(db, transaction)
-            tasks_created_total += reset_result.tasks_created
-            cycles_reset_total += reset_result.cycles_reset
+            if force:
+                transaction, created = transaction_repo.upsert(db, data)
+            else:
+                transaction = transaction_repo.create(db, data)
+                created = True
+
             customers_processed.add(record["customer_id"])
+
+            if created:
+                reset_result = CycleReset.run(db, transaction)
+                tasks_created_total += reset_result.tasks_created
+                cycles_reset_total += reset_result.cycles_reset
 
         db.commit()
 

@@ -23,6 +23,25 @@ def create(db: Session, data: dict) -> Transaction:
     return transaction
 
 
+def upsert(db: Session, data: dict) -> tuple[Transaction, bool]:
+    """
+    Insert or update a transaction by idoc_number.
+    On conflict: updates sales_rep_name only (backfill use case — PK unchanged).
+    Returns (transaction, created) — created=False means existing row was updated.
+    """
+    existing = get_by_idoc(db, data["idoc_number"])
+    if existing:
+        existing.sales_rep_name = data.get("sales_rep_name")
+        db.flush()
+        logger.info("transaction_repo: upserted idoc=%s (backfill sales_rep_name)", data["idoc_number"])
+        return existing, False
+    transaction = Transaction(**data)
+    db.add(transaction)
+    db.flush()
+    logger.info("transaction_repo: created idoc=%s customer=%s", data["idoc_number"], data["customer_id"])
+    return transaction, True
+
+
 def create_many(db: Session, records: list[dict]) -> list[Transaction]:
     """
     Bulk-insert transactions from SAPParser output.
