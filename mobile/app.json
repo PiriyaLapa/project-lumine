@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.benz.lumine",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "backgroundColor": "#1a1a2e"
       },
