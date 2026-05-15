@@ -75,6 +75,7 @@ Do not use any other source for APK version.
 |-----|-------------|---------|
 | v1.0.0 | 1 | Initial release |
 | v1.1.0 | 2 | Upload History + duplicate date-range conflict detection |
+| v1.2.0 | 4 | Light theme, Sold by label, staff filter chips, force re-upload upsert |
 
 ## UI Theme Rules
 
