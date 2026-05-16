@@ -1,7 +1,7 @@
 """
 TDD — POST /api/v1/auth/register endpoint.
 Tests written before implementation per CLAUDE.md TDD rule.
-Covers all 6 cases from the approved spec.
+Covers all cases including employee_code field.
 """
 from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
@@ -16,11 +16,16 @@ from app.models.staff import Staff
 # Helpers
 # ---------------------------------------------------------------------------
 
-def make_staff(staff_id: int = 10, role: str = "sales_associate", store_id: int = 1) -> Staff:
+def make_staff(
+    staff_id: int = 10,
+    role: str = "sales_associate",
+    store_id: int = 1,
+    employee_code: str = "56546",
+) -> Staff:
     s = Staff()
     s.id = staff_id
     s.name = "Test User"
-    s.employee_code = "REG-test-uuid"
+    s.employee_code = employee_code
     s.role = role
     s.store_id = store_id
     s.email = "test@lumine.com"
@@ -42,11 +47,12 @@ VALID = {
     "confirm_password": "password123",
     "role": "sales_associate",
     "store_id": 1,
+    "employee_code": "56546",
 }
 
 
 # ---------------------------------------------------------------------------
-# Register endpoint
+# Existing cases (updated — VALID now includes employee_code)
 # ---------------------------------------------------------------------------
 
 class TestRegister:
@@ -57,6 +63,7 @@ class TestRegister:
         client = TestClient(app)
 
         with patch("app.routers.auth.staff_repo.get_by_email", return_value=None), \
+             patch("app.routers.auth.staff_repo.get_by_employee_code", return_value=None), \
              patch("app.routers.auth.staff_repo.create_staff", return_value=new_staff):
             resp = client.post("/api/v1/auth/register", json=VALID)
 
@@ -76,6 +83,7 @@ class TestRegister:
         client = TestClient(app)
 
         with patch("app.routers.auth.staff_repo.get_by_email", return_value=None), \
+             patch("app.routers.auth.staff_repo.get_by_employee_code", return_value=None), \
              patch("app.routers.auth.staff_repo.create_staff", return_value=new_staff):
             resp = client.post("/api/v1/auth/register", json=VALID)
 
@@ -122,3 +130,67 @@ class TestRegister:
         payload = {**VALID, "role": "admin"}
         resp = client.post("/api/v1/auth/register", json=payload)
         assert resp.status_code == 422
+
+    # ---------------------------------------------------------------------------
+    # New cases — employee_code
+    # ---------------------------------------------------------------------------
+
+    def test_employee_code_required_returns_422(self):
+        client = TestClient(app)
+        payload = {k: v for k, v in VALID.items() if k != "employee_code"}
+        resp = client.post("/api/v1/auth/register", json=payload)
+        assert resp.status_code == 422
+
+    def test_employee_code_empty_returns_422(self):
+        client = TestClient(app)
+        payload = {**VALID, "employee_code": ""}
+        resp = client.post("/api/v1/auth/register", json=payload)
+        assert resp.status_code == 422
+
+    def test_duplicate_employee_code_returns_409(self):
+        existing = make_staff()
+        app.dependency_overrides[get_db] = db_override()
+        client = TestClient(app)
+
+        with patch("app.routers.auth.staff_repo.get_by_email", return_value=None), \
+             patch("app.routers.auth.staff_repo.get_by_employee_code", return_value=existing):
+            resp = client.post("/api/v1/auth/register", json=VALID)
+
+        app.dependency_overrides.clear()
+
+        assert resp.status_code == 409
+        assert resp.json()["detail"] == "This employee code is already registered."
+
+    def test_employee_code_stored_not_generated(self):
+        new_staff = make_staff()
+        app.dependency_overrides[get_db] = db_override()
+        client = TestClient(app)
+
+        with patch("app.routers.auth.staff_repo.get_by_email", return_value=None), \
+             patch("app.routers.auth.staff_repo.get_by_employee_code", return_value=None), \
+             patch("app.routers.auth.staff_repo.create_staff", return_value=new_staff) as mock_create:
+            client.post("/api/v1/auth/register", json=VALID)
+
+        app.dependency_overrides.clear()
+
+        _, kwargs = mock_create.call_args
+        assert kwargs["employee_code"] == "56546"
+        assert not kwargs["employee_code"].startswith("REG-")
+
+    def test_employee_code_float_normalized(self):
+        new_staff = make_staff()
+        app.dependency_overrides[get_db] = db_override()
+        client = TestClient(app)
+
+        payload = {**VALID, "employee_code": "56546.0"}
+
+        with patch("app.routers.auth.staff_repo.get_by_email", return_value=None), \
+             patch("app.routers.auth.staff_repo.get_by_employee_code", return_value=None), \
+             patch("app.routers.auth.staff_repo.create_staff", return_value=new_staff) as mock_create:
+            resp = client.post("/api/v1/auth/register", json=payload)
+
+        app.dependency_overrides.clear()
+
+        assert resp.status_code == 201
+        _, kwargs = mock_create.call_args
+        assert kwargs["employee_code"] == "56546"

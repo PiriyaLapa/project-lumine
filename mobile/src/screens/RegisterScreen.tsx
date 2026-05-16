@@ -24,6 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import client, { tokenStorage } from '../api/client';
+import { THEME } from '../styles/theme';
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, 'Register'> };
 
@@ -37,6 +38,7 @@ export default function RegisterScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [employeeCode, setEmployeeCode] = useState('');
   const [role, setRole] = useState<'sales_associate' | 'store_manager'>('sales_associate');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -76,6 +78,7 @@ export default function RegisterScreen({ navigation }: Props) {
     if (!password) { setError('Password is required.'); return; }
     if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
     if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
+    if (!employeeCode.trim()) { setError('SAP employee code is required.'); return; }
     if (!selectedStore) { setError('Please select your store.'); return; }
 
     setLoading(true);
@@ -88,6 +91,7 @@ export default function RegisterScreen({ navigation }: Props) {
         confirm_password: confirmPassword,
         role,
         store_id: selectedStore.id,
+        employee_code: employeeCode.trim(),
       });
 
       const { access_token, refresh_token, staff_id, role: userRole } = response.data;
@@ -100,7 +104,12 @@ export default function RegisterScreen({ navigation }: Props) {
       navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
     } catch (err: any) {
       if (err.response?.status === 409) {
-        setError('An account with this email already exists.');
+        const detail = err.response.data?.detail ?? '';
+        if (detail.includes('employee code')) {
+          setError('This employee code is already registered. Contact your manager.');
+        } else {
+          setError('An account with this email already exists.');
+        }
       } else if (err.response?.status === 422) {
         const detail = err.response.data?.detail;
         if (Array.isArray(detail) && detail[0]?.msg) {
@@ -125,8 +134,8 @@ export default function RegisterScreen({ navigation }: Props) {
     if (storesLoading) {
       return (
         <View style={[styles.inputRow, styles.pickerRow]}>
-          <Ionicons name="business-outline" size={18} color="#9A9A9A" style={styles.icon} />
-          <ActivityIndicator size="small" color="#C9974A" style={{ marginRight: 8 }} />
+          <Ionicons name="business-outline" size={18} color={THEME.colors.textSecondary} style={styles.icon} />
+          <ActivityIndicator size="small" color={THEME.colors.primary} style={{ marginRight: 8 }} />
           <Text style={styles.pickerPlaceholder}>Loading stores...</Text>
         </View>
       );
@@ -135,11 +144,11 @@ export default function RegisterScreen({ navigation }: Props) {
     if (storesError) {
       return (
         <TouchableOpacity style={[styles.inputRow, styles.pickerRow]} onPress={fetchStores}>
-          <Ionicons name="business-outline" size={18} color="#DC2626" style={styles.icon} />
-          <Text style={[styles.pickerPlaceholder, { color: '#DC2626', flex: 1 }]}>
+          <Ionicons name="business-outline" size={18} color={THEME.colors.error} style={styles.icon} />
+          <Text style={[styles.pickerPlaceholder, { color: THEME.colors.error, flex: 1 }]}>
             Failed to load stores. Please try again.
           </Text>
-          <Ionicons name="refresh-outline" size={18} color="#DC2626" />
+          <Ionicons name="refresh-outline" size={18} color={THEME.colors.error} />
         </TouchableOpacity>
       );
     }
@@ -149,11 +158,11 @@ export default function RegisterScreen({ navigation }: Props) {
         style={[styles.inputRow, styles.pickerRow]}
         onPress={() => setPickerVisible(true)}
       >
-        <Ionicons name="business-outline" size={18} color="#9A9A9A" style={styles.icon} />
+        <Ionicons name="business-outline" size={18} color={THEME.colors.textSecondary} style={styles.icon} />
         <Text style={[styles.pickerText, !selectedStore && styles.pickerPlaceholder]}>
           {selectedStore ? selectedStore.name : 'Select your store'}
         </Text>
-        <Ionicons name="chevron-down-outline" size={18} color="#9A9A9A" />
+        <Ionicons name="chevron-down-outline" size={18} color={THEME.colors.textSecondary} />
       </TouchableOpacity>
     );
   };
@@ -171,11 +180,11 @@ export default function RegisterScreen({ navigation }: Props) {
 
           {/* Full Name */}
           <View style={styles.inputRow}>
-            <Ionicons name="person-outline" size={18} color="#9A9A9A" style={styles.icon} />
+            <Ionicons name="person-outline" size={18} color={THEME.colors.textSecondary} style={styles.icon} />
             <TextInput
               style={styles.input}
               placeholder="Full Name"
-              placeholderTextColor="#B0A898"
+              placeholderTextColor={THEME.colors.textMuted}
               value={fullName}
               onChangeText={setFullName}
               autoCapitalize="words"
@@ -184,11 +193,11 @@ export default function RegisterScreen({ navigation }: Props) {
 
           {/* Email */}
           <View style={styles.inputRow}>
-            <Ionicons name="mail-outline" size={18} color="#9A9A9A" style={styles.icon} />
+            <Ionicons name="mail-outline" size={18} color={THEME.colors.textSecondary} style={styles.icon} />
             <TextInput
               style={styles.input}
               placeholder="Email Address"
-              placeholderTextColor="#B0A898"
+              placeholderTextColor={THEME.colors.textMuted}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -198,34 +207,48 @@ export default function RegisterScreen({ navigation }: Props) {
 
           {/* Password */}
           <View style={styles.inputRow}>
-            <Ionicons name="lock-closed-outline" size={18} color="#9A9A9A" style={styles.icon} />
+            <Ionicons name="lock-closed-outline" size={18} color={THEME.colors.textSecondary} style={styles.icon} />
             <TextInput
               style={styles.input}
               placeholder="Password (min 8 characters)"
-              placeholderTextColor="#B0A898"
+              placeholderTextColor={THEME.colors.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.eyeBtn}>
-              <Ionicons name={showPassword ? 'eye-outline' : 'eye-off-outline'} size={18} color="#9A9A9A" />
+              <Ionicons name={showPassword ? 'eye-outline' : 'eye-off-outline'} size={18} color={THEME.colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
           {/* Confirm Password */}
           <View style={styles.inputRow}>
-            <Ionicons name="lock-closed-outline" size={18} color="#9A9A9A" style={styles.icon} />
+            <Ionicons name="lock-closed-outline" size={18} color={THEME.colors.textSecondary} style={styles.icon} />
             <TextInput
               style={styles.input}
               placeholder="Confirm Password"
-              placeholderTextColor="#B0A898"
+              placeholderTextColor={THEME.colors.textMuted}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={!showConfirm}
             />
             <TouchableOpacity onPress={() => setShowConfirm(v => !v)} style={styles.eyeBtn}>
-              <Ionicons name={showConfirm ? 'eye-outline' : 'eye-off-outline'} size={18} color="#9A9A9A" />
+              <Ionicons name={showConfirm ? 'eye-outline' : 'eye-off-outline'} size={18} color={THEME.colors.textSecondary} />
             </TouchableOpacity>
+          </View>
+
+          {/* SAP Employee Code */}
+          <View style={styles.inputRow}>
+            <Ionicons name="barcode-outline" size={18} color={THEME.colors.textSecondary} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="SAP Employee Code (e.g. 56546)"
+              placeholderTextColor={THEME.colors.textMuted}
+              value={employeeCode}
+              onChangeText={setEmployeeCode}
+              autoCapitalize="none"
+              keyboardType="numeric"
+            />
           </View>
 
           {/* Role Picker */}
@@ -311,7 +334,7 @@ export default function RegisterScreen({ navigation }: Props) {
                     {item.name}
                   </Text>
                   {selectedStore?.id === item.id && (
-                    <Ionicons name="checkmark" size={18} color="#C9974A" />
+                    <Ionicons name="checkmark" size={18} color={THEME.colors.primary} />
                   )}
                 </TouchableOpacity>
               )}
@@ -331,112 +354,112 @@ export default function RegisterScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF7F2' },
-  scroll: { flexGrow: 1, justifyContent: 'center', padding: 24, paddingVertical: 40 },
+  container: { flex: 1, backgroundColor: THEME.colors.background },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: THEME.spacing.lg, paddingVertical: 40 },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 32,
-    shadowColor: '#C9974A',
+    backgroundColor: THEME.colors.card,
+    borderRadius: THEME.radius.lg,
+    padding: THEME.spacing.xl,
+    shadowColor: THEME.colors.primaryShadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 8,
   },
-  sparkle: { textAlign: 'center', fontSize: 20, color: '#C9974A', marginBottom: 8 },
+  sparkle: { textAlign: 'center', fontSize: THEME.fontSize.xl, color: THEME.colors.primary, marginBottom: THEME.spacing.sm },
   brand: {
     textAlign: 'center',
-    fontSize: 32,
+    fontSize: THEME.fontSize.brand,
     fontWeight: '800',
-    color: '#1A1A1A',
+    color: THEME.colors.text,
     letterSpacing: 6,
     marginBottom: 6,
   },
-  subtitle: { textAlign: 'center', fontSize: 13, color: '#9A9A9A', marginBottom: 28 },
-  label: { fontSize: 12, color: '#9A9A9A', fontWeight: '600', marginBottom: 8, marginTop: 2 },
+  subtitle: { textAlign: 'center', fontSize: THEME.fontSize.sm, color: THEME.colors.textSecondary, marginBottom: 28 },
+  label: { fontSize: THEME.fontSize.xs, color: THEME.colors.textSecondary, fontWeight: '600', marginBottom: THEME.spacing.sm, marginTop: 2 },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F2EC',
-    borderRadius: 12,
+    backgroundColor: THEME.colors.input,
+    borderRadius: THEME.radius.md,
     marginBottom: 14,
     paddingHorizontal: 14,
   },
   pickerRow: { paddingVertical: 14 },
-  icon: { marginRight: 8 },
-  input: { flex: 1, color: '#1A1A1A', fontSize: 15, paddingVertical: 14 },
+  icon: { marginRight: THEME.spacing.sm },
+  input: { flex: 1, color: THEME.colors.text, fontSize: THEME.fontSize.md, paddingVertical: 14 },
   eyeBtn: { padding: 4 },
-  pickerText: { flex: 1, color: '#1A1A1A', fontSize: 15 },
-  pickerPlaceholder: { flex: 1, color: '#B0A898', fontSize: 15 },
+  pickerText: { flex: 1, color: THEME.colors.text, fontSize: THEME.fontSize.md },
+  pickerPlaceholder: { flex: 1, color: THEME.colors.textMuted, fontSize: THEME.fontSize.md },
   roleRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   roleBtn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: '#F5F2EC',
+    borderRadius: THEME.radius.md,
+    backgroundColor: THEME.colors.surface,
     alignItems: 'center',
   },
-  roleBtnActive: { backgroundColor: '#C9974A' },
-  roleBtnText: { color: '#9A9A9A', fontSize: 13, fontWeight: '600' },
-  roleBtnTextActive: { color: '#FFFFFF' },
-  errorText: { color: '#DC2626', fontSize: 13, marginBottom: 12, textAlign: 'center' },
+  roleBtnActive: { backgroundColor: THEME.colors.primary },
+  roleBtnText: { color: THEME.colors.textSecondary, fontSize: THEME.fontSize.sm, fontWeight: '600' },
+  roleBtnTextActive: { color: THEME.colors.card },
+  errorText: { color: THEME.colors.error, fontSize: THEME.fontSize.sm, marginBottom: 12, textAlign: 'center' },
   button: {
-    backgroundColor: '#C9974A',
-    borderRadius: 50,
+    backgroundColor: THEME.colors.primary,
+    borderRadius: THEME.radius.pill,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: THEME.spacing.sm,
   },
   disabled: { opacity: 0.5 },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  divider: { height: 1, backgroundColor: '#F0EBE3', marginVertical: 20 },
-  linkText: { textAlign: 'center', color: '#9A9A9A', fontSize: 14 },
-  linkGold: { color: '#C9974A', fontWeight: '600' },
+  buttonText: { color: THEME.colors.card, fontSize: THEME.fontSize.lg, fontWeight: '700' },
+  divider: { height: 1, backgroundColor: THEME.colors.divider, marginVertical: 20 },
+  linkText: { textAlign: 'center', color: THEME.colors.textSecondary, fontSize: 14 },
+  linkGold: { color: THEME.colors.primary, fontWeight: '600' },
 
   // Modal
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: THEME.spacing.lg,
   },
   modalCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingTop: 24,
-    paddingBottom: 8,
+    backgroundColor: THEME.colors.card,
+    borderRadius: THEME.radius.lg,
+    paddingTop: THEME.spacing.lg,
+    paddingBottom: THEME.spacing.sm,
     maxHeight: '70%',
-    shadowColor: '#C9974A',
+    shadowColor: THEME.colors.primaryShadow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 24,
     elevation: 12,
   },
   modalTitle: {
-    fontSize: 16,
+    fontSize: THEME.fontSize.lg,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: THEME.colors.text,
     textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 24,
+    marginBottom: THEME.spacing.md,
+    paddingHorizontal: THEME.spacing.lg,
   },
   storeItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingHorizontal: THEME.spacing.lg,
   },
   storeItemActive: { backgroundColor: '#FDF6EC' },
-  storeItemText: { fontSize: 15, color: '#1A1A1A', flex: 1 },
-  storeItemTextActive: { color: '#C9974A', fontWeight: '600' },
-  storeSeparator: { height: 1, backgroundColor: '#F0EBE3', marginHorizontal: 24 },
+  storeItemText: { fontSize: THEME.fontSize.md, color: THEME.colors.text, flex: 1 },
+  storeItemTextActive: { color: THEME.colors.primary, fontWeight: '600' },
+  storeSeparator: { height: 1, backgroundColor: THEME.colors.divider, marginHorizontal: THEME.spacing.lg },
   modalClose: {
-    margin: 16,
+    margin: THEME.spacing.md,
     paddingVertical: 14,
-    borderRadius: 50,
-    backgroundColor: '#F5F2EC',
+    borderRadius: THEME.radius.pill,
+    backgroundColor: THEME.colors.surface,
     alignItems: 'center',
   },
-  modalCloseText: { color: '#9A9A9A', fontSize: 15, fontWeight: '600' },
+  modalCloseText: { color: THEME.colors.textSecondary, fontSize: THEME.fontSize.md, fontWeight: '600' },
 });

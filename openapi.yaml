@@ -202,7 +202,7 @@ components:
 
     RegisterRequest:
       type: object
-      required: [full_name, email, password, confirm_password, role, store_id]
+      required: [full_name, email, password, confirm_password, role, store_id, employee_code]
       properties:
         full_name:
           type: string
@@ -218,6 +218,9 @@ components:
           enum: [sales_associate, store_manager]
         store_id:
           type: integer
+        employee_code:
+          type: string
+          description: SAP employee code (e.g. 56546). Float format (56546.0) is normalized by the backend.
 
     Store:
       type: object
