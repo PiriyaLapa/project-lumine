@@ -156,6 +156,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/EvidenceResponse'
 
+  /api/v1/evidence/{task_id}:
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceResponse'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/evidence/{evidence_id}:
+    patch:
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: evidence_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvidencePatchRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceResponse'
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/reports/kpi:
     get:
       security:
@@ -314,6 +368,17 @@ components:
         timestamp:
           type: string
           format: date-time
+
+    EvidencePatchRequest:
+      type: object
+      properties:
+        notes:
+          type: string
+          nullable: true
+        image:
+          type: string
+          format: binary
+          nullable: true
 
     UploadRequest:
       type: object

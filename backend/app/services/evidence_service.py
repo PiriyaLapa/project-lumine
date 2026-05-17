@@ -96,3 +96,62 @@ class EvidenceService:
             timestamp=record.timestamp,
             drive_failed=drive_failed,
         )
+
+    @classmethod
+    def update(
+        cls,
+        db,
+        evidence_id: int,
+        notes: Optional[str],
+        image_bytes: Optional[bytes],
+        filename: Optional[str],
+    ) -> "EvidenceResult":
+        """
+        Update evidence notes and/or photo.
+
+        Rules:
+        - notes=None → keep existing notes unchanged
+        - image_bytes=None → keep existing Drive photo (do not delete)
+        - New image: validate ≤800KB, upload to Drive, replace URI
+        - Drive failure on update is non-fatal (keeps old URI)
+        """
+        image_uri: Optional[str] = None
+        image_size_kb: Optional[float] = None
+        drive_failed: bool = False
+
+        if image_bytes is not None:
+            image_size_kb = len(image_bytes) / 1024
+            if image_size_kb > MAX_IMAGE_SIZE_KB:
+                raise ValueError(
+                    f"Image size {image_size_kb:.1f}KB exceeds the "
+                    f"{MAX_IMAGE_SIZE_KB}KB limit. Compress on device before upload."
+                )
+            timestamp = int(datetime.now(timezone.utc).timestamp())
+            drive_filename = f"evidence_{evidence_id}_{timestamp}.jpg"
+            try:
+                image_uri = drive_client.upload(image_bytes, drive_filename)
+            except Exception as exc:
+                logger.warning(
+                    "Drive upload failed on update for evidence_id=%d: %s — keeping old URI",
+                    evidence_id,
+                    exc,
+                )
+                drive_failed = True
+                image_uri = None  # repo.update skips image fields when None
+
+        record = evidence_repo.update(
+            db=db,
+            evidence_id=evidence_id,
+            notes=notes,
+            image_uri=image_uri,
+            image_size_kb=image_size_kb,
+        )
+
+        return EvidenceResult(
+            id=record.id,
+            notes=record.notes,
+            image_uri=record.image_uri,
+            image_size_kb=record.image_size_kb,
+            timestamp=record.timestamp,
+            drive_failed=drive_failed,
+        )

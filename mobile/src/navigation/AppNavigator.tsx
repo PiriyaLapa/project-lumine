@@ -12,6 +12,8 @@ import LoginScreen from '../screens/LoginScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import TaskDetailScreen from '../screens/TaskDetailScreen';
 import EvidenceScreen from '../screens/EvidenceScreen';
+import EvidenceDetailScreen from '../screens/EvidenceDetailScreen';
+import CompletedTasksScreen from '../screens/CompletedTasksScreen';
 import BarcodeScreen from '../screens/BarcodeScreen';
 import UploadScreen from '../screens/UploadScreen';
 import UploadHistoryScreen from '../screens/UploadHistoryScreen';
@@ -29,6 +31,8 @@ export type RootStackParamList = {
   Dashboard: undefined;
   TaskDetail: { taskId: number };
   Evidence: { taskId: number };
+  EvidenceDetail: { taskId: number };
+  CompletedTasks: undefined;
   Barcode: { customer_id: string };   // LOCKED field name from openapi.yaml
   Upload: undefined;
   UploadHistory: undefined;
@@ -70,6 +74,8 @@ export default function AppNavigator() {
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
         <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
         <Stack.Screen name="Evidence" component={EvidenceScreen} />
+        <Stack.Screen name="CompletedTasks" component={CompletedTasksScreen} />
+        <Stack.Screen name="EvidenceDetail" component={EvidenceDetailScreen} />
         <Stack.Screen name="Barcode" component={BarcodeScreen} />
         <Stack.Screen name="Upload" component={UploadScreen} />
         <Stack.Screen name="UploadHistory" component={UploadHistoryScreen} />

@@ -29,6 +29,7 @@ import client, { tokenStorage, authEvents } from '../api/client';
 import { offlineCache, CachedTask } from '../cache/offlineCache';
 import TaskCard from '../components/TaskCard';
 import OfflineBanner from '../components/OfflineBanner';
+import { THEME } from '../styles/theme';
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, 'Dashboard'> };
 
@@ -115,6 +116,12 @@ export default function DashboardScreen({ navigation }: Props) {
         </Text>
         <View style={styles.headerActions}>
           <TouchableOpacity
+            style={styles.historyButton}
+            onPress={() => navigation.navigate('CompletedTasks')}
+          >
+            <Text style={styles.historyText}>History</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={styles.uploadButton}
             onPress={() => navigation.navigate('Upload')}
           >
@@ -127,13 +134,13 @@ export default function DashboardScreen({ navigation }: Props) {
       </View>
 
       {loading && tasks.length === 0 ? (
-        <ActivityIndicator color="#C9974A" style={{ marginTop: 40 }} />
+        <ActivityIndicator color={THEME.colors.primary} style={{ marginTop: 40 }} />
       ) : (
         <FlatList
           data={filteredTasks}
           keyExtractor={(item) => String(item.id)}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={fetchTasks} tintColor="#C9974A" />
+            <RefreshControl refreshing={loading} onRefresh={fetchTasks} tintColor={THEME.colors.primary} />
           }
           ListHeaderComponent={
             role === 'store_manager' && uniqueStaffNames.length > 0 ? (
@@ -187,7 +194,7 @@ export default function DashboardScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF7F2' },
+  container: { flex: 1, backgroundColor: THEME.colors.background },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -195,36 +202,44 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 56,
   },
-  title: { fontSize: 24, fontWeight: '800', color: '#1A1A1A' },
-  headerActions: { flexDirection: 'row', gap: 10 },
+  title: { fontSize: THEME.fontSize.xxl, fontWeight: '800', color: THEME.colors.text },
+  headerActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  historyButton: {
+    borderRadius: THEME.radius.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: THEME.colors.primary,
+  },
+  historyText: { color: THEME.colors.primary, fontSize: THEME.fontSize.sm, fontWeight: '600' },
   uploadButton: {
-    backgroundColor: '#F5F2EC',
-    borderRadius: 8,
+    backgroundColor: THEME.colors.surface,
+    borderRadius: THEME.radius.sm,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#F0EBE3',
+    borderColor: THEME.colors.divider,
   },
-  uploadText: { color: '#1A1A1A', fontSize: 13, fontWeight: '600' },
+  uploadText: { color: THEME.colors.text, fontSize: THEME.fontSize.sm, fontWeight: '600' },
   logoutButton: {
-    borderRadius: 8,
+    borderRadius: THEME.radius.sm,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  logoutText: { color: '#9A9A9A', fontSize: 13, fontWeight: '600' },
+  logoutText: { color: THEME.colors.textSecondary, fontSize: THEME.fontSize.sm, fontWeight: '600' },
   list: { padding: 16, paddingTop: 0 },
-  empty: { color: '#B0A898', textAlign: 'center', marginTop: 60, fontSize: 16 },
+  empty: { color: THEME.colors.textMuted, textAlign: 'center', marginTop: 60, fontSize: THEME.fontSize.lg },
   chipsScroll: { marginBottom: 12 },
   chipsContent: { paddingHorizontal: 16, gap: 8 },
   chip: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.colors.card,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderWidth: 1,
-    borderColor: '#D0C9C0',
+    borderColor: THEME.colors.textMuted,
   },
-  chipActive: { backgroundColor: '#C9974A', borderColor: '#C9974A' },
-  chipText: { color: '#1A1A1A', fontSize: 13, fontWeight: '600' },
-  chipTextActive: { color: '#ffffff' },
+  chipActive: { backgroundColor: THEME.colors.primary, borderColor: THEME.colors.primary },
+  chipText: { color: THEME.colors.text, fontSize: THEME.fontSize.sm, fontWeight: '600' },
+  chipTextActive: { color: THEME.colors.card },
 });
