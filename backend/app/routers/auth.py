@@ -5,7 +5,6 @@ All other endpoints use Depends(get_current_staff).
 """
 import logging
 import re
-import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, field_validator, model_validator
 from sqlalchemy.orm import Session
@@ -44,6 +43,7 @@ class RegisterRequest(BaseModel):
     confirm_password: str
     role: str
     store_id: int
+    employee_code: str
 
     @field_validator("email")
     @classmethod
@@ -64,6 +64,17 @@ class RegisterRequest(BaseModel):
     def validate_role(cls, v: str) -> str:
         if v not in {"sales_associate", "store_manager"}:
             raise ValueError("Role must be sales_associate or store_manager.")
+        return v
+
+    @field_validator("employee_code")
+    @classmethod
+    def validate_employee_code(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Employee code is required.")
+        # Normalize SAP float format: "56546.0" → "56546"
+        if re.match(r"^\d+\.0$", v):
+            v = v[:-2]
         return v
 
     @model_validator(mode="after")
@@ -134,7 +145,14 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
             detail="An account with this email already exists.",
         )
 
-    employee_code = f"REG-{uuid.uuid4()}"
+    existing_code = staff_repo.get_by_employee_code(db, body.employee_code)
+    if existing_code:
+        logger.warning("Registration attempt with duplicate employee_code.")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This employee code is already registered.",
+        )
+
     hashed = AuthService.hash_password(body.password)
 
     new_staff = staff_repo.create_staff(
@@ -144,7 +162,7 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
         hashed_password=hashed,
         role=body.role,
         store_id=body.store_id,
-        employee_code=employee_code,
+        employee_code=body.employee_code,
     )
 
     token_data = {

@@ -156,6 +156,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/EvidenceResponse'
 
+  /api/v1/evidence/{task_id}:
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceResponse'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/evidence/{evidence_id}:
+    patch:
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: evidence_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvidencePatchRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceResponse'
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/reports/kpi:
     get:
       security:
@@ -202,7 +256,7 @@ components:
 
     RegisterRequest:
       type: object
-      required: [full_name, email, password, confirm_password, role, store_id]
+      required: [full_name, email, password, confirm_password, role, store_id, employee_code]
       properties:
         full_name:
           type: string
@@ -218,6 +272,9 @@ components:
           enum: [sales_associate, store_manager]
         store_id:
           type: integer
+        employee_code:
+          type: string
+          description: SAP employee code (e.g. 56546). Float format (56546.0) is normalized by the backend.
 
     Store:
       type: object
@@ -311,6 +368,17 @@ components:
         timestamp:
           type: string
           format: date-time
+
+    EvidencePatchRequest:
+      type: object
+      properties:
+        notes:
+          type: string
+          nullable: true
+        image:
+          type: string
+          format: binary
+          nullable: true
 
     UploadRequest:
       type: object
