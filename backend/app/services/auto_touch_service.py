@@ -28,7 +28,7 @@ class AutoTouchService:
         return [self._to_auto_touch_customer(task, transaction, customer) for task, transaction, customer in rows]
 
     def generate_message(self, db, customer_id: str, task_id: int, staff_id: int):
-        task, transaction, customer = self._get_owned_row(db, task_id, staff_id)
+        task, transaction, customer = self._get_owned_row(db, task_id, staff_id, customer_id)
         products = [
             p for p in self._products_for(transaction) if not p["returned"]
         ]
@@ -43,7 +43,7 @@ class AutoTouchService:
     def send_message(
         self, db, customer_id: str, task_id: int, message_text: str, channels: list[str] | None, staff_id: int
     ) -> dict:
-        task, transaction, customer = self._get_owned_row(db, task_id, staff_id)
+        task, transaction, customer = self._get_owned_row(db, task_id, staff_id, customer_id)
 
         available = {"line": bool(customer.line_id), "email": bool(customer.email)}
         requested = channels if channels else [c for c, ok in available.items() if ok]
@@ -123,13 +123,15 @@ class AutoTouchService:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _get_owned_row(self, db, task_id: int, staff_id: int) -> tuple:
+    def _get_owned_row(self, db, task_id: int, staff_id: int, customer_id: str | None = None) -> tuple:
         row = auto_touch_repo.get_task_with_customer(db, task_id)
         if row is None:
             raise AutoTouchOwnershipError("Task not found.")
         task, transaction, customer = row
         if transaction.staff_id != staff_id:
             raise AutoTouchOwnershipError("This customer's task does not belong to you.")
+        if customer_id is not None and customer.customer_id != customer_id:
+            raise AutoTouchOwnershipError("Task does not belong to the specified customer.")
         return task, transaction, customer
 
     def _products_for(self, transaction) -> list[dict]:

@@ -320,29 +320,40 @@ class TestPartialSend:
         assert resp.json()["sent"] == 1
 
 
-class TestCustomerIdNotCrossChecked:
-    def test_send_echoes_caller_customer_id_without_validating_against_task(self):
-        # BUG (found during QA-6 planning, 2026-07-21): send_message resolves
-        # the task/customer purely from task_id via _get_owned_row — the
-        # customer_id path param is never cross-checked against the row it
-        # actually resolves. This test documents current behavior; it does
-        # NOT assert this is correct. See auto_touch_service.py send_message.
-        # Fixing this is tracked as a separate follow-up decision.
+class TestCustomerIdCrossCheck:
+    """
+    Fixed 2026-07-21 (found during QA-6 planning): _get_owned_row now
+    rejects a task_id/customer_id pair that don't actually belong
+    together, instead of silently trusting the caller-supplied
+    customer_id. See auto_touch_service.py::_get_owned_row.
+    """
+
+    def test_send_rejects_mismatched_customer_id_for_real_task(self):
         row = make_row(901, "C-REAL", 90001)
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo"), \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
              patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
             mock_repo.get_task_with_customer.return_value = row
-            mock_line.push_message.return_value = True
-            mock_sendgrid.send_email.return_value = True
             resp = TestClient(app).post(
                 "/api/v1/auto-touch/send/C-DIFFERENT",
                 json={"task_id": 901, "message_text": "Hi!"},
                 headers=bearer(),
             )
-        assert resp.status_code == 200
-        assert resp.json()["customer_id"] == "C-DIFFERENT"
+            mock_line.push_message.assert_not_called()
+            mock_sendgrid.send_email.assert_not_called()
+        assert resp.status_code == 403
+
+    def test_generate_message_rejects_mismatched_customer_id_for_real_task(self):
+        row = make_row(902, "C-REAL2", 90001)
+        with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo:
+            mock_repo.get_task_with_customer.return_value = row
+            resp = TestClient(app).post(
+                "/api/v1/auto-touch/generate-message",
+                json={"customer_id": "C-DIFFERENT2", "task_id": 902},
+                headers=bearer(),
+            )
+        assert resp.status_code == 404
 
 
 class TestPIIAcrossFullChain:
