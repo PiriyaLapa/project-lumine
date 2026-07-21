@@ -117,6 +117,12 @@ export default function DashboardScreen({ navigation }: Props) {
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.historyButton}
+            onPress={() => navigation.navigate('FollowUpDashboard')}
+          >
+            <Text style={styles.historyText}>Follow-Up Report</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.historyButton}
             onPress={() => navigation.navigate('CompletedTasks')}
           >
             <Text style={styles.historyText}>History</Text>

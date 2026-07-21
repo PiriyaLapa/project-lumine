@@ -227,6 +227,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPIReport'
 
+  /api/v1/reports/dashboard:
+    get:
+      summary: Follow-Up Dashboard — every role sees their own follow-up performance
+      description: >
+        sales_associate gets their own single-row stats; store_manager gets a
+        per-staff breakdown across all active staff in their store. Same
+        response shape for both roles.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [today, week, month, all]
+            default: today
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagerDashboardReport'
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # ── CUSTOMERS (Auto-Touch Sprint 1) ──────────────────────────────────────────
   /api/v1/customers/import-crm:
     post:
@@ -692,6 +721,53 @@ components:
         completion_rate:
           type: number
           format: float
+
+    StaffFollowUpStats:
+      type: object
+      properties:
+        staff_id:
+          type: integer
+          nullable: true
+        staff_name:
+          type: string
+          nullable: true
+        tasks_due:
+          type: integer
+        tasks_done:
+          type: integer
+        tasks_pending:
+          type: integer
+        tasks_skipped:
+          type: integer
+        messages_sent_line:
+          type: integer
+        messages_sent_email:
+          type: integer
+        customers_followed_up:
+          type: integer
+
+    ManagerDashboardReport:
+      type: object
+      properties:
+        store_id:
+          type: integer
+        period:
+          type: string
+          enum: [today, week, month, all]
+        date_from:
+          type: string
+          format: date
+          nullable: true
+        date_to:
+          type: string
+          format: date
+          nullable: true
+        staff_breakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffFollowUpStats'
+        store_totals:
+          $ref: '#/components/schemas/StaffFollowUpStats'
 
     # ── COMMON ──────────────────────────────────────────────────────────────────
     ErrorResponse:
