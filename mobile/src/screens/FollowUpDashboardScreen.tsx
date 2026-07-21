@@ -14,12 +14,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import client from '../api/client';
 import { THEME } from '../styles/theme';
+import { generateAndShareDashboardPdf, SharingUnavailableError } from '../utils/dashboardPdf';
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, 'FollowUpDashboard'> };
 
@@ -32,7 +34,7 @@ const PERIOD_LABELS: Record<Period, string> = {
   all: 'All Time',
 };
 
-interface StaffFollowUpStats {
+export interface StaffFollowUpStats {
   staff_id: number | null;
   staff_name: string | null;
   tasks_due: number;
@@ -44,7 +46,7 @@ interface StaffFollowUpStats {
   customers_followed_up: number;
 }
 
-interface ManagerDashboardReport {
+export interface ManagerDashboardReport {
   store_id: number;
   period: Period;
   date_from: string | null;
@@ -57,6 +59,7 @@ export default function FollowUpDashboardScreen({ navigation }: Props) {
   const [period, setPeriod] = useState<Period>('today');
   const [data, setData] = useState<ManagerDashboardReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSharing, setIsSharing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -75,6 +78,22 @@ export default function FollowUpDashboardScreen({ navigation }: Props) {
       setData(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleShareReport = async () => {
+    if (!data) return;
+    setIsSharing(true);
+    try {
+      await generateAndShareDashboardPdf(data, PERIOD_LABELS[period]);
+    } catch (error) {
+      if (error instanceof SharingUnavailableError) {
+        Alert.alert('Sharing Unavailable', "Sharing isn't available on this device.");
+      } else {
+        Alert.alert('Could Not Share Report', 'Something went wrong generating the PDF. Please try again.');
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -98,10 +117,23 @@ export default function FollowUpDashboardScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Text style={styles.backText}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>Follow-Up Report</Text>
+        </View>
+        <TouchableOpacity
+          onPress={handleShareReport}
+          disabled={isSharing || !data}
+          style={styles.shareBtn}
+        >
+          {isSharing ? (
+            <ActivityIndicator color={THEME.colors.primary} size="small" />
+          ) : (
+            <Text style={[styles.shareText, !data && styles.shareTextDisabled]}>Share</Text>
+          )}
         </TouchableOpacity>
-        <Text style={styles.title}>Follow-Up Report</Text>
       </View>
 
       <View style={styles.chipsRow}>
@@ -161,11 +193,15 @@ const styles = StyleSheet.create({
     paddingBottom: THEME.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: THEME.spacing.md,
+    justifyContent: 'space-between',
   },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: THEME.spacing.md },
   backBtn: { paddingVertical: 4 },
   backText: { color: THEME.colors.primary, fontSize: THEME.fontSize.md, fontWeight: '600' },
   title: { fontSize: THEME.fontSize.xl, fontWeight: '800', color: THEME.colors.text },
+  shareBtn: { paddingVertical: 4, paddingHorizontal: 4, minWidth: 44, alignItems: 'flex-end' },
+  shareText: { color: THEME.colors.primary, fontSize: THEME.fontSize.md, fontWeight: '600' },
+  shareTextDisabled: { color: THEME.colors.textMuted },
   chipsRow: {
     flexDirection: 'row',
     gap: THEME.spacing.sm,
