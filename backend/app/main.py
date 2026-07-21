@@ -7,7 +7,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, upload, tasks, evidence, reports, stores
+from app.routers import auth, upload, tasks, evidence, reports, stores, customers, auto_touch
 from app.config import settings
 
 logging.basicConfig(
@@ -40,6 +40,8 @@ app.include_router(upload.router)
 app.include_router(tasks.router)
 app.include_router(evidence.router)
 app.include_router(reports.router)
+app.include_router(customers.router)
+app.include_router(auto_touch.router)
 
 
 @app.get("/health")

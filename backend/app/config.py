@@ -38,5 +38,14 @@ class Settings:
     ]
     ENV: str = os.getenv("ENV", "development")
 
+    # ------------------------------------------------------------------
+    # Auto-Touch Sprint 1 — required when auto_touch_service is loaded.
+    # Not guarded here so existing features start without them.
+    # Each service validates its own key via _require_env() at init time.
+    # ------------------------------------------------------------------
+    ANTHROPIC_API_KEY: str | None = os.getenv("ANTHROPIC_API_KEY")
+    SENDGRID_API_KEY: str | None = os.getenv("SENDGRID_API_KEY")
+    LINE_CHANNEL_ACCESS_TOKEN: str | None = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+
 
 settings = Settings()

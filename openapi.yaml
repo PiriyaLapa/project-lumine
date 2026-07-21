@@ -4,6 +4,7 @@ info:
   version: 1.0.0
 
 paths:
+  # ── AUTH ────────────────────────────────────────────────────────────────────
   /api/v1/auth/login:
     post:
       requestBody:
@@ -56,6 +57,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # ── STORES ──────────────────────────────────────────────────────────────────
   /api/v1/stores:
     get:
       responses:
@@ -67,6 +69,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Store'
 
+  # ── UPLOAD ──────────────────────────────────────────────────────────────────
   /api/v1/upload:
     post:
       security:
@@ -111,6 +114,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # ── TASKS ────────────────────────────────────────────────────────────────────
   /api/v1/tasks:
     get:
       security:
@@ -140,6 +144,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FollowUpTask'
 
+  # ── EVIDENCE ─────────────────────────────────────────────────────────────────
   /api/v1/evidence:
     post:
       security:
@@ -210,6 +215,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # ── REPORTS ──────────────────────────────────────────────────────────────────
   /api/v1/reports/kpi:
     get:
       security:
@@ -221,6 +227,227 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPIReport'
 
+  # ── CUSTOMERS (Auto-Touch Sprint 1) ──────────────────────────────────────────
+  /api/v1/customers/import-crm:
+    post:
+      summary: Bulk import customer contact data from CRM Excel export
+      description: >
+        Accepts an Excel file exported from the CRM system (columns: Customer ID,
+        Customer Name, Phone, Email). For each row — updates existing customer if
+        customer_id matches, creates new if not. Flags name conflicts for manual
+        review. Scoped to the authenticated staff member (staff_id from JWT).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CRMImportRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRMImportResponse'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/customers/register:
+    post:
+      summary: Quick-register a new customer at point of sale
+      description: >
+        Captures new customer contact info at the counter. Name + Phone required.
+        Email optional. Customer ID from receipt optional — enables auto-join with
+        future SAP uploads. If customer_id omitted, system assigns a temporary ID
+        flagged for manual matching. Language auto-detected from name.
+        staff_id from JWT — customer is associated with the registering associate.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRegisterRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '409':
+          description: Customer ID already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── AUTO-TOUCH (Auto-Touch Sprint 1) ─────────────────────────────────────────
+  /api/v1/auto-touch/today:
+    get:
+      summary: Today's customer follow-up list
+      description: >
+        Returns all customers due for contact today based on the 2-2-2 schedule.
+        Excludes: customers with do_not_contact = true; customers already sent
+        today; customers skipped today. Ordered by urgency (overdue first, then
+        by task_type: 2D → 2W → 2M). Scoped to staff_id from JWT.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AutoTouchCustomer'
+
+  /api/v1/auto-touch/generate-message:
+    post:
+      summary: Generate an AI-drafted follow-up message for a customer
+      description: >
+        Calls Claude API to generate a personalised follow-up message using the
+        customer's name, purchased products (parsed to readable names), touchpoint
+        type, and language preference. PDPA opt-out line is hardcoded in the
+        system prompt — non-bypassable. Returns draft text only; does not send.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateMessageRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateMessageResponse'
+        '404':
+          description: customer_id or task_id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auto-touch/send/{customer_id}:
+    post:
+      summary: Send the approved message to a customer via LINE and/or Email
+      description: >
+        Sends the (possibly edited) message text to available channels. Records
+        delivery in the messages table. On success, marks the linked FollowUpTask
+        as Done internally — no separate PATCH /tasks call required from mobile.
+        staff_id from JWT must match the task owner.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: SAP customer ID (string, e.g. "67913358")
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMessageResponse'
+        '403':
+          description: Task does not belong to authenticated staff member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auto-touch/skip/{customer_id}:
+    post:
+      summary: Defer today's follow-up for a customer to tomorrow
+      description: >
+        Marks the customer as skipped for today. They reappear in today's list
+        tomorrow. Skip is temporary — there are no permanent skips.
+        staff_id from JWT must match the task owner.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkipResponse'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auto-touch/status:
+    get:
+      summary: Today's Auto-Touch summary counts
+      description: >
+        Returns aggregate counts for today: how many customers are due, sent,
+        pending, and skipped. Used by the mobile tab badge and status banner.
+        Scoped to staff_id from JWT.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoTouchStatusResponse'
+
+  # ── UTILS (Auto-Touch Sprint 1) ──────────────────────────────────────────────
+  /api/v1/utils/parse-sap-product:
+    post:
+      summary: Parse a SAP material description to a human-readable product name
+      description: >
+        Converts SAP internal product codes (e.g. "PL_TOC Spin CB 10276625 01,
+        00, 272, M") to readable names (e.g. "TOC Spin Polo Shirt — Size M").
+        Used internally by auto_touch_service before passing product context to
+        Claude API. Also exposed as a utility endpoint for testing and debugging.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SAPProductParseRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SAPProductParseResponse'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -229,6 +456,7 @@ components:
       bearerFormat: JWT
 
   schemas:
+    # ── AUTH SCHEMAS ────────────────────────────────────────────────────────────
     LoginRequest:
       type: object
       required: [email, password]
@@ -276,14 +504,6 @@ components:
           type: string
           description: SAP employee code (e.g. 56546). Float format (56546.0) is normalized by the backend.
 
-    Store:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-
     RefreshRequest:
       type: object
       required: [refresh_token]
@@ -300,6 +520,16 @@ components:
           type: string
           example: bearer
 
+    # ── STORE SCHEMAS ───────────────────────────────────────────────────────────
+    Store:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    # ── TASK SCHEMAS ────────────────────────────────────────────────────────────
     FollowUpTask:
       type: object
       properties:
@@ -322,7 +552,7 @@ components:
         status:                # LOCKED. Never: state, task_status
           type: string
           enum: [Pending, Done, Superseded]
-        staff_name:            # Display name of the sales associate who owns this task; null for pre-migration-0005 tasks
+        staff_name:            # Display name of the sales associate; null for pre-migration-0005 tasks
           type: string
           nullable: true
         created_at:
@@ -339,6 +569,7 @@ components:
           type: string
           enum: [Done]
 
+    # ── EVIDENCE SCHEMAS ────────────────────────────────────────────────────────
     EvidenceRequest:
       type: object
       properties:
@@ -380,6 +611,7 @@ components:
           format: binary
           nullable: true
 
+    # ── UPLOAD SCHEMAS ──────────────────────────────────────────────────────────
     UploadRequest:
       type: object
       properties:
@@ -400,31 +632,6 @@ components:
           type: array
           items:
             type: string
-
-    ErrorResponse:
-      type: object
-      properties:
-        error_code:
-          type: string
-        message:
-          type: string
-        detail:
-          type: string
-
-    KPIReport:
-      type: object
-      properties:
-        staff_id:
-          type: integer
-        store_id:
-          type: integer
-        total_tasks:
-          type: integer
-        completed_tasks:
-          type: integer
-        completion_rate:
-          type: number
-          format: float
 
     UploadLog:
       type: object
@@ -469,3 +676,295 @@ components:
               format: date-time
             date_range:
               type: string
+
+    # ── REPORT SCHEMAS ──────────────────────────────────────────────────────────
+    KPIReport:
+      type: object
+      properties:
+        staff_id:
+          type: integer
+        store_id:
+          type: integer
+        total_tasks:
+          type: integer
+        completed_tasks:
+          type: integer
+        completion_rate:
+          type: number
+          format: float
+
+    # ── COMMON ──────────────────────────────────────────────────────────────────
+    ErrorResponse:
+      type: object
+      properties:
+        error_code:
+          type: string
+        message:
+          type: string
+        detail:
+          type: string
+
+    # ── CUSTOMER SCHEMAS (Auto-Touch Sprint 1) ───────────────────────────────────
+    CustomerRegisterRequest:
+      type: object
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+          description: Customer full name. Language auto-detected from this field.
+        phone:
+          type: string
+          description: Required. Primary contact number.
+        email:
+          type: string
+          nullable: true
+          description: Optional. Used as fallback delivery channel if LINE ID unavailable.
+        customer_id:
+          type: string
+          nullable: true
+          description: >
+            SAP customer ID from purchase receipt. Optional — enables auto-join
+            with future SAP uploads. If omitted, system assigns a temporary ID
+            prefixed "TMP-" and flags for manual matching.
+
+    Customer:
+      type: object
+      properties:
+        customer_id:           # LOCKED. Join key between SAP and CRM data. Never: cust_id, customerId
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        line_id:
+          type: string
+          nullable: true
+          description: LINE user ID. Null until Sprint 2 auto-matching or manual entry.
+        language:              # LOCKED. Never: lang, locale
+          type: string
+          enum: [th, en]
+          description: Message language. Auto-detected from name; overridable manually.
+        language_source:
+          type: string
+          enum: [auto_detected, manual_override]
+        do_not_contact:        # LOCKED. Enforced at repository layer — never filtered in router
+          type: boolean
+          description: If true, customer never appears in Auto-Touch today list.
+        source:
+          type: string
+          enum: [crm_import, manual_registration, sap_only]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CRMImportRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: >
+            Excel file (.xlsx) with columns: Customer ID, Customer Name, Phone, Email.
+            Filtered by Sales Rep ID 50847 before upload.
+
+    CRMImportResponse:
+      type: object
+      properties:
+        updated:
+          type: integer
+          description: Existing customers updated with new contact info.
+        created:
+          type: integer
+          description: New customer records created.
+        conflicts:
+          type: integer
+          description: Rows where Customer ID matched but name differed — flagged, not applied.
+        conflict_details:
+          type: array
+          items:
+            type: object
+            properties:
+              customer_id:
+                type: string
+              existing_name:
+                type: string
+              import_name:
+                type: string
+
+    # ── AUTO-TOUCH SCHEMAS (Auto-Touch Sprint 1) ─────────────────────────────────
+    AutoTouchProduct:
+      type: object
+      properties:
+        product_raw:
+          type: string
+          description: Original SAP material description. Stored for audit.
+        product_clean:
+          type: string
+          description: Human-readable name after parsing. Used in AI message context.
+        price:
+          type: number
+          format: float
+        returned:
+          type: boolean
+          description: If true, this item was returned. Excluded from message context.
+
+    AutoTouchCustomer:
+      type: object
+      description: A customer due for follow-up today, enriched for the Auto-Touch screen.
+      properties:
+        customer_id:           # LOCKED. Matches Customer.customer_id
+          type: string
+        customer_name:
+          type: string
+        language:
+          type: string
+          enum: [th, en]
+        task_id:               # LOCKED. Links to FollowUpTask.id — used in generate and send calls
+          type: integer
+        task_type:
+          type: string
+          enum: [2D, 2W, 2M]
+        due_date:
+          type: string
+          format: date
+        days_since_purchase:
+          type: integer
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutoTouchProduct'
+        channels_available:
+          type: object
+          properties:
+            email:
+              type: boolean
+            line:
+              type: boolean
+        send_status:           # LOCKED. Never: status, contact_status
+          type: string
+          enum: [pending, sent, skipped]
+
+    GenerateMessageRequest:
+      type: object
+      required: [customer_id, task_id]
+      properties:
+        customer_id:
+          type: string
+        task_id:
+          type: integer
+
+    GenerateMessageResponse:
+      type: object
+      properties:
+        message_text:
+          type: string
+          description: AI-generated draft. Always non-empty. Contains PDPA opt-out line.
+        language:
+          type: string
+          enum: [th, en]
+        touchpoint:
+          type: string
+          enum: [2D, 2W, 2M]
+
+    SendMessageRequest:
+      type: object
+      required: [task_id, message_text]
+      properties:
+        task_id:
+          type: integer
+          description: Links the send to a specific FollowUpTask. Task is marked Done on success.
+        message_text:
+          type: string
+          description: Final message text (may be edited from AI draft). Must not be empty.
+        channels:
+          type: array
+          items:
+            type: string
+            enum: [line, email]
+          description: >
+            Channels to send to. If omitted, sends to all available channels for this customer.
+            If a channel is listed but not available (no LINE ID, no email), it is silently skipped
+            and status reflects the actual send result.
+
+    SendMessageResponse:
+      type: object
+      properties:
+        customer_id:
+          type: string
+        task_id:
+          type: integer
+        channels_sent:
+          type: array
+          items:
+            type: string
+          description: Which channels actually delivered (e.g. ["email"]).
+        sent_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [sent, partial, failed]
+          description: >
+            sent = all requested channels delivered.
+            partial = at least one channel delivered.
+            failed = no channels delivered.
+
+    SkipResponse:
+      type: object
+      properties:
+        customer_id:
+          type: string
+        task_id:
+          type: integer
+        deferred_to:
+          type: string
+          format: date
+          description: The date this customer reappears in the today list (always tomorrow).
+
+    AutoTouchStatusResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        total_due:
+          type: integer
+        sent:
+          type: integer
+        pending:
+          type: integer
+        skipped:
+          type: integer
+
+    # ── UTILS SCHEMAS (Auto-Touch Sprint 1) ──────────────────────────────────────
+    SAPProductParseRequest:
+      type: object
+      required: [product_raw]
+      properties:
+        product_raw:
+          type: string
+          description: Raw SAP material description string, e.g. "PL_TOC Spin CB 10276625 01, 00, 272, M"
+
+    SAPProductParseResponse:
+      type: object
+      properties:
+        product_raw:
+          type: string
+        product_clean:
+          type: string
+          description: Human-readable product name, e.g. "TOC Spin Polo Shirt — Size M"
+        category:
+          type: string
+          nullable: true
+          description: Mapped product category, e.g. "Polo Shirt"
+        size:
+          type: string
+          nullable: true
+          description: Extracted size, e.g. "M", "L", "50"
