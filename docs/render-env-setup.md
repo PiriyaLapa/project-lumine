@@ -63,6 +63,12 @@ Add these three before deploying the Auto-Touch routes.
 
 **Free tier limits**: 100 emails/day — sufficient for personal use phase.
 
+> **Status (2026-07-21): superseded.** Architect decided to use SMTP through
+> a company email account instead of SendGrid (volume stays under 50/day).
+> `sendgrid_client.py` is not yet replaced — see the `AUTO_TOUCH_SEND_ENABLED`
+> section below, which keeps sending off regardless of which email provider
+> ends up configured.
+
 ---
 
 ### 3. `LINE_CHANNEL_ACCESS_TOKEN`
@@ -78,6 +84,29 @@ Add these three before deploying the Auto-Touch routes.
 5. Click **Issue** (or copy existing token if already issued)
 
 > Note: This is the **long-lived** token — not the short-lived one. It does not expire unless you explicitly reissue it.
+
+---
+
+### 4. `AUTO_TOUCH_SEND_ENABLED` — do NOT set to `true` on Render yet
+
+**Used by**: `services/auto_touch_service.py` (`send_message`) — gates the `POST /api/v1/auto-touch/send/{customer_id}` endpoint  
+**Required**: No — defaults to `false` (disabled) when unset  
+**Format**: `true` or `false`
+
+**Status (2026-07-21): intentionally left unset / `false` in production.**
+Automated customer messaging (LINE push + email) requires company
+authorization that has not been granted yet. This flag is a second,
+independent safety layer on top of "just don't set the LINE/email
+credentials" — even if `SENDGRID_API_KEY`/SMTP vars and
+`LINE_CHANNEL_ACCESS_TOKEN` are all configured, `send_message()` refuses
+to dispatch anything while this is `false`. `generate-message` (drafting)
+is unaffected and stays fully functional regardless of this flag — only
+the actual send is gated.
+
+**Do not set this to `true` on Render until the architect explicitly
+authorizes automated customer messaging.** When that happens, this doc
+should be updated with the date and who approved it, alongside flipping
+the var.
 
 ---
 

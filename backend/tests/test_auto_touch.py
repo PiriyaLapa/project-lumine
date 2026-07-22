@@ -14,7 +14,11 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.database import get_db
 from app.services.auth_service import AuthService
-from app.services.auto_touch_service import AutoTouchService, AutoTouchOwnershipError
+from app.services.auto_touch_service import (
+    AutoTouchService,
+    AutoTouchOwnershipError,
+    AutoTouchSendDisabledError,
+)
 from app.services.message_generator import GenerateMessageResult
 
 
@@ -113,6 +117,15 @@ class TestGenerateMessage:
 
 
 class TestSendMessage:
+    """AUTO_TOUCH_SEND_ENABLED forced True for this class — these tests cover
+    dispatch logic once sending is authorized. The disabled-by-default gate
+    itself is covered separately by TestSendMessageDisabledByDefault."""
+
+    @pytest.fixture(autouse=True)
+    def _enable_sending(self):
+        with patch("app.services.auto_touch_service.settings.AUTO_TOUCH_SEND_ENABLED", True):
+            yield
+
     def test_send_marks_task_done_on_success(self):
         db = MagicMock()
         row = make_row(1, "C1", 90001)
@@ -242,6 +255,52 @@ class TestSendMessage:
 
         assert result["status"] == "partial"
         mock_task_repo.mark_done.assert_called_once()
+
+
+class TestSendMessageDisabledByDefault:
+    """Automated customer messaging is gated behind AUTO_TOUCH_SEND_ENABLED,
+    pending company authorization. No class-level override here — this
+    exercises the real default (unset/false)."""
+
+    def test_send_disabled_by_default_raises_and_never_dispatches(self):
+        db = MagicMock()
+        row = make_row(1, "C1", 90001)
+        with patch("app.services.auto_touch_service.settings.AUTO_TOUCH_SEND_ENABLED", False), \
+             patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
+             patch("app.services.auto_touch_service.task_repo") as mock_task_repo, \
+             patch("app.services.auto_touch_service.line_client") as mock_line, \
+             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+            mock_repo.get_task_with_customer.return_value = row
+            service = AutoTouchService()
+            with pytest.raises(AutoTouchSendDisabledError):
+                service.send_message(
+                    db, customer_id="C1", task_id=1, message_text="Hi!", channels=None, staff_id=90001
+                )
+
+        # The gate must short-circuit before any lookup, dispatch, or persistence.
+        mock_repo.get_task_with_customer.assert_not_called()
+        mock_line.push_message.assert_not_called()
+        mock_sendgrid.send_email.assert_not_called()
+        mock_repo.create_message.assert_not_called()
+        mock_task_repo.mark_done.assert_not_called()
+
+    def test_send_endpoint_returns_403_when_disabled(self):
+        row = make_row(1, "C1", 90001)
+        with patch("app.services.auto_touch_service.settings.AUTO_TOUCH_SEND_ENABLED", False), \
+             patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
+             patch("app.services.auto_touch_service.line_client") as mock_line, \
+             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+            mock_repo.get_task_with_customer.return_value = row
+            resp = TestClient(app).post(
+                "/api/v1/auto-touch/send/C1",
+                json={"task_id": 1, "message_text": "Hi!"},
+                headers={"Authorization": f"Bearer {make_token()}"},
+            )
+            mock_line.push_message.assert_not_called()
+            mock_sendgrid.send_email.assert_not_called()
+
+        assert resp.status_code == 403
+        assert "disabled" in resp.json()["detail"].lower()
 
 
 class TestSkip:

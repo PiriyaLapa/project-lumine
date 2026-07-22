@@ -47,5 +47,18 @@ class Settings:
     SENDGRID_API_KEY: str | None = os.getenv("SENDGRID_API_KEY")
     LINE_CHANNEL_ACCESS_TOKEN: str | None = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 
+    # ------------------------------------------------------------------
+    # Auto-Touch automated customer messaging — send gate.
+    # Defaults to disabled (False) even if the credentials above are set.
+    # Sending real LINE/email messages to customers requires explicit
+    # company authorization for automated customer messaging, which has
+    # not been granted yet. Do NOT flip this to true in production until
+    # the architect explicitly authorizes it. See
+    # app/services/auto_touch_service.py (send_message gate) and
+    # docs/render-env-setup.md for context — this is intentional, not a
+    # missing-config bug to "fix."
+    # ------------------------------------------------------------------
+    AUTO_TOUCH_SEND_ENABLED: bool = os.getenv("AUTO_TOUCH_SEND_ENABLED", "false").lower() == "true"
+
 
 settings = Settings()
