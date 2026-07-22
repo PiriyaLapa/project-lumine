@@ -39,6 +39,7 @@ export default function DashboardScreen({ navigation }: Props) {
   const [isOffline, setIsOffline] = useState(false);
   const [role, setRole] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Read role once on mount — determines header title for N1/N2 verification
   useEffect(() => {
@@ -60,6 +61,7 @@ export default function DashboardScreen({ navigation }: Props) {
       const fetched: CachedTask[] = response.data;
       setTasks(fetched);
       setIsOffline(false);
+      setLoadError(null);
       await offlineCache.saveTasks(fetched); // update cache for offline use
     } catch (error: any) {
       if (!error.response) {
@@ -67,6 +69,12 @@ export default function DashboardScreen({ navigation }: Props) {
         setIsOffline(true);
         const cached = await offlineCache.getTasks();
         setTasks(cached);
+      } else {
+        // Server responded with an error (401/403/500/etc.) — must not fall
+        // through silently, since the empty state below reads as "you're
+        // all caught up." Surface it explicitly instead of showing a false
+        // "No pending tasks. Well done!" for what's actually a failed load.
+        setLoadError('Could not load your tasks. Pull down to try again.');
       }
     } finally {
       setLoading(false);
@@ -190,7 +198,7 @@ export default function DashboardScreen({ navigation }: Props) {
             />
           )}
           ListEmptyComponent={
-            <Text style={styles.empty}>No pending tasks. Well done!</Text>
+            <Text style={styles.empty}>{loadError ?? 'No pending tasks. Well done!'}</Text>
           }
           contentContainerStyle={styles.list}
         />
