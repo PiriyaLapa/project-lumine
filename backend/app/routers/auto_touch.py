@@ -12,7 +12,11 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.middleware.auth import get_current_staff
 from app.services.auth_service import TokenPayload
-from app.services.auto_touch_service import AutoTouchService, AutoTouchOwnershipError
+from app.services.auto_touch_service import (
+    AutoTouchService,
+    AutoTouchOwnershipError,
+    AutoTouchSendDisabledError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +134,11 @@ def send_message(
         result = service.send_message(
             db, customer_id, body.task_id, body.message_text, body.channels, current_staff.staff_id
         )
+    except AutoTouchSendDisabledError as exc:
+        # Reuses the 403 response already documented in openapi.yaml for
+        # this endpoint — no contract change needed. See
+        # AutoTouchSendDisabledError's docstring for why this is gated.
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
     except AutoTouchOwnershipError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 

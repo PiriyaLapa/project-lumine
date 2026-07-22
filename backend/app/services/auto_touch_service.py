@@ -11,6 +11,7 @@ docs/sprint1-backlog.md ARCH-5). category/size are always None until then.
 import logging
 from datetime import date, datetime, timezone
 
+from app.config import settings
 from app.repositories import auto_touch_repo, task_repo
 from app.services import line_client, sendgrid_client
 from app.services.message_generator import MessageGenerator
@@ -20,6 +21,16 @@ logger = logging.getLogger(__name__)
 
 class AutoTouchOwnershipError(Exception):
     """Raised when a staff member acts on a customer/task that isn't theirs."""
+
+
+class AutoTouchSendDisabledError(Exception):
+    """Raised when send_message() is called while AUTO_TOUCH_SEND_ENABLED is
+    False (the default). Automated LINE/email messaging to real customers
+    requires explicit company authorization, which has not been granted yet
+    — see settings.AUTO_TOUCH_SEND_ENABLED in app/config.py. This is a
+    deliberate product gate, not a bug: do not remove or bypass this check
+    to silence the error without confirming the authorization has actually
+    been granted."""
 
 
 class AutoTouchService:
@@ -43,6 +54,17 @@ class AutoTouchService:
     def send_message(
         self, db, customer_id: str, task_id: int, message_text: str, channels: list[str] | None, staff_id: int
     ) -> dict:
+        # GATE — automated customer messaging is disabled pending company
+        # authorization (see AutoTouchSendDisabledError docstring and
+        # settings.AUTO_TOUCH_SEND_ENABLED). Checked first, before any DB
+        # lookup or external dispatch, so a customer can never receive an
+        # automated message while this is off — regardless of whether LINE
+        # or email credentials happen to be configured.
+        if not settings.AUTO_TOUCH_SEND_ENABLED:
+            raise AutoTouchSendDisabledError(
+                "Automated customer messaging is currently disabled pending company authorization."
+            )
+
         task, transaction, customer = self._get_owned_row(db, task_id, staff_id, customer_id)
 
         available = {"line": bool(customer.line_id), "email": bool(customer.email)}

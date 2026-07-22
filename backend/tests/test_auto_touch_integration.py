@@ -44,6 +44,16 @@ def _override_db():
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(autouse=True)
+def _enable_auto_touch_send():
+    """AUTO_TOUCH_SEND_ENABLED defaults to False (see auto_touch_service.py).
+    Forced True here so this file's existing send-flow tests keep exercising
+    real dispatch logic; TestSendDisabledGate below overrides it back to
+    False to test the gate itself end to end."""
+    with patch("app.services.auto_touch_service.settings.AUTO_TOUCH_SEND_ENABLED", True):
+        yield
+
+
 def make_excel(rows: list[dict]) -> BytesIO:
     df = pd.DataFrame(rows)
     buf = BytesIO()
@@ -412,3 +422,47 @@ class TestPIIAcrossFullChain:
         assert phone not in caplog.text
         assert email not in caplog.text
         assert line_id not in caplog.text
+
+
+class TestSendDisabledGate:
+    """AUTO_TOUCH_SEND_ENABLED forced back to False here (overriding the
+    module-level autouse fixture) — proves the full router->service chain
+    refuses to dispatch to LINE/email when sending isn't authorized."""
+
+    def test_send_endpoint_403s_and_never_dispatches_when_disabled(self):
+        row = make_row(1101, "C-GATE1", 90001)
+        with patch("app.services.auto_touch_service.settings.AUTO_TOUCH_SEND_ENABLED", False), \
+             patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
+             patch("app.services.auto_touch_service.line_client") as mock_line, \
+             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+            mock_repo.get_task_with_customer.return_value = row
+            resp = TestClient(app).post(
+                "/api/v1/auto-touch/send/C-GATE1",
+                json={"task_id": 1101, "message_text": "Hi!"},
+                headers=bearer(),
+            )
+            mock_repo.get_task_with_customer.assert_not_called()
+            mock_line.push_message.assert_not_called()
+            mock_sendgrid.send_email.assert_not_called()
+
+        assert resp.status_code == 403
+
+    def test_generate_message_still_works_when_send_disabled(self):
+        """generate-message never sends anything externally, so it must stay
+        fully functional regardless of the send gate."""
+        row = make_row(1102, "C-GATE2", 90001)
+        with patch("app.services.auto_touch_service.settings.AUTO_TOUCH_SEND_ENABLED", False), \
+             patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
+             patch("app.services.message_generator.anthropic.Anthropic") as MockClient:
+            mock_repo.get_task_with_customer.return_value = row
+            MockClient.return_value.messages.create.return_value = make_anthropic_response(
+                f"Hi! Thanks for your purchase. {PDPA_OPT_OUT_EN}"
+            )
+            resp = TestClient(app).post(
+                "/api/v1/auto-touch/generate-message",
+                json={"customer_id": "C-GATE2", "task_id": 1102},
+                headers=bearer(),
+            )
+
+        assert resp.status_code == 200
+        assert PDPA_OPT_OUT_EN in resp.json()["message_text"]
