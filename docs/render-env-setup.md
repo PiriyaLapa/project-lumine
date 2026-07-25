@@ -96,7 +96,7 @@ these credentials until that's explicitly turned on.
 Automated customer messaging (LINE push + email) requires company
 authorization that has not been granted yet. This flag is a second,
 independent safety layer on top of "just don't set the LINE/email
-credentials" — even if `SENDGRID_API_KEY`/SMTP vars and
+credentials" — even if SMTP vars and
 `LINE_CHANNEL_ACCESS_TOKEN` are all configured, `send_message()` refuses
 to dispatch anything while this is `false`. `generate-message` (drafting)
 is unaffected and stays fully functional regardless of this flag — only
