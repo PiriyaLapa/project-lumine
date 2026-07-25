@@ -122,7 +122,11 @@ export default function DashboardScreen({ navigation }: Props) {
         <Text style={styles.title}>
           {role === 'store_manager' ? 'Store Dashboard' : 'My Tasks'}
         </Text>
-        <View style={styles.headerActions}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.headerActions}
+        >
           <TouchableOpacity
             style={styles.historyButton}
             onPress={() => navigation.navigate('FollowUpDashboard')}
@@ -144,7 +148,7 @@ export default function DashboardScreen({ navigation }: Props) {
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </View>
 
       {loading && tasks.length === 0 ? (
