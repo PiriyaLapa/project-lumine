@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { THEME } from '../styles/theme';
 
 const MAX_SIZE_KB = 800;
 const MAX_DIMENSION = 1280;
@@ -93,11 +94,16 @@ export default function EvidenceForm({ task_id, onSubmit, isSubmitting }: Eviden
         style={styles.textInput}
         multiline
         numberOfLines={4}
-        placeholder="Describe the follow-up interaction..."
+        placeholder="Describe the follow-up interaction — what you discussed and how you reached them..."
         placeholderTextColor="#B0A898"
         value={notes}
         onChangeText={setNotes}
       />
+
+      <Text style={styles.label}>Photo</Text>
+      <Text style={styles.photoHint}>
+        Product photo, or a screenshot showing you contacted the customer (LINE, email, etc.)
+      </Text>
 
       <View style={styles.photoRow}>
         <TouchableOpacity style={styles.photoButton} onPress={handleCamera}>
@@ -145,6 +151,11 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
     marginBottom: 16,
+  },
+  photoHint: {
+    color: THEME.colors.textMuted,
+    fontSize: THEME.fontSize.xs,
+    marginBottom: 10,
   },
   photoRow: {
     flexDirection: 'row',
