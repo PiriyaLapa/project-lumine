@@ -44,7 +44,10 @@ class Settings:
     # Each service validates its own key via _require_env() at init time.
     # ------------------------------------------------------------------
     ANTHROPIC_API_KEY: str | None = os.getenv("ANTHROPIC_API_KEY")
-    SENDGRID_API_KEY: str | None = os.getenv("SENDGRID_API_KEY")
+    SMTP_HOST: str | None = os.getenv("SMTP_HOST")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USERNAME: str | None = os.getenv("SMTP_USERNAME")
+    SMTP_PASSWORD: str | None = os.getenv("SMTP_PASSWORD")
     LINE_CHANNEL_ACCESS_TOKEN: str | None = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 
     # ------------------------------------------------------------------

@@ -4,7 +4,7 @@ QA-6 — full Auto-Touch end-to-end integration test.
 Unlike test_auto_touch.py / test_crm_import.py / test_customer_register.py
 (which patch entire service classes at the router boundary), this file
 patches only at the repository / external-client boundary — customer_repo,
-auto_touch_repo, task_repo, line_client, sendgrid_client, and the Anthropic
+auto_touch_repo, task_repo, line_client, smtp_client, and the Anthropic
 SDK client. That lets the real CRMImportService, CustomerRegisterService,
 and AutoTouchService logic run for real, chained together through actual
 HTTP calls via TestClient, proving the router -> service -> repository
@@ -189,10 +189,10 @@ class TestFullHappyPathChain:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo") as mock_task_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = make_row(501, customer_id, 90001)
             mock_line.push_message.return_value = True
-            mock_sendgrid.send_email.return_value = True
+            mock_smtp.send_email.return_value = True
             resp = client.post(
                 f"/api/v1/auto-touch/send/{customer_id}",
                 json={"task_id": 501, "message_text": message_text},
@@ -262,7 +262,7 @@ class TestOwnershipIsolation:
         row = make_row(702, "C-OWN2", 90001)
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             resp = TestClient(app).post(
                 "/api/v1/auto-touch/send/C-OWN2",
@@ -271,7 +271,7 @@ class TestOwnershipIsolation:
             )
             # Ownership check must short-circuit before any outbound send attempt.
             mock_line.push_message.assert_not_called()
-            mock_sendgrid.send_email.assert_not_called()
+            mock_smtp.send_email.assert_not_called()
         assert resp.status_code == 403
 
     def test_staff_b_cannot_skip_staff_as_task(self):
@@ -307,10 +307,10 @@ class TestPartialSend:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo") as mock_task_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             mock_line.push_message.return_value = True
-            mock_sendgrid.send_email.return_value = False
+            mock_smtp.send_email.return_value = False
             resp = client.post(
                 "/api/v1/auto-touch/send/C-PART1",
                 json={"task_id": 801, "message_text": "Hi!"},
@@ -343,7 +343,7 @@ class TestCustomerIdCrossCheck:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo"), \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             resp = TestClient(app).post(
                 "/api/v1/auto-touch/send/C-DIFFERENT",
@@ -351,7 +351,7 @@ class TestCustomerIdCrossCheck:
                 headers=bearer(),
             )
             mock_line.push_message.assert_not_called()
-            mock_sendgrid.send_email.assert_not_called()
+            mock_smtp.send_email.assert_not_called()
         assert resp.status_code == 403
 
     def test_generate_message_rejects_mismatched_customer_id_for_real_task(self):
@@ -409,10 +409,10 @@ class TestPIIAcrossFullChain:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo"), \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             mock_line.push_message.return_value = True
-            mock_sendgrid.send_email.return_value = True
+            mock_smtp.send_email.return_value = True
             client.post(
                 "/api/v1/auto-touch/send/C-PII2",
                 json={"task_id": 1001, "message_text": "Hi!"},
@@ -434,7 +434,7 @@ class TestSendDisabledGate:
         with patch("app.services.auto_touch_service.settings.AUTO_TOUCH_SEND_ENABLED", False), \
              patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             resp = TestClient(app).post(
                 "/api/v1/auto-touch/send/C-GATE1",
@@ -443,7 +443,7 @@ class TestSendDisabledGate:
             )
             mock_repo.get_task_with_customer.assert_not_called()
             mock_line.push_message.assert_not_called()
-            mock_sendgrid.send_email.assert_not_called()
+            mock_smtp.send_email.assert_not_called()
 
         assert resp.status_code == 403
 

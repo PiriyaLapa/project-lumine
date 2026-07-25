@@ -2,7 +2,7 @@
 TDD — auto_touch_service.py + routers/auto_touch.py (QA-4).
 Covers: today list (do_not_contact excluded, skipped_until respected,
 ordering), generate (mocked Claude via message_generator), send (mocked
-LINE+SendGrid, task marked Done, 403 on wrong staff, silent-skip
+LINE+SMTP, task marked Done, 403 on wrong staff, silent-skip
 unavailable channel), skip (deferred_to = tomorrow).
 """
 from datetime import date, timedelta
@@ -132,10 +132,10 @@ class TestSendMessage:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo") as mock_task_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             mock_line.push_message.return_value = True
-            mock_sendgrid.send_email.return_value = True
+            mock_smtp.send_email.return_value = True
             service = AutoTouchService()
             result = service.send_message(
                 db, customer_id="C1", task_id=1, message_text="Hi!", channels=None, staff_id=90001
@@ -162,9 +162,9 @@ class TestSendMessage:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo") as mock_task_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
-            mock_sendgrid.send_email.return_value = True
+            mock_smtp.send_email.return_value = True
             service = AutoTouchService()
             result = service.send_message(
                 db, customer_id="C1", task_id=1, message_text="Hi!", channels=None, staff_id=90001
@@ -182,7 +182,7 @@ class TestSendMessage:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo"), \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client"):
+             patch("app.services.auto_touch_service.smtp_client"):
             mock_repo.get_task_with_customer.return_value = row
             service = AutoTouchService()
             result = service.send_message(
@@ -200,14 +200,14 @@ class TestSendMessage:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo"), \
              patch("app.services.auto_touch_service.line_client"), \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             service = AutoTouchService()
             result = service.send_message(
                 db, customer_id="C1", task_id=1, message_text="Hi!", channels=["email"], staff_id=90001
             )
 
-        mock_sendgrid.send_email.assert_not_called()
+        mock_smtp.send_email.assert_not_called()
         assert result["status"] == "failed"
 
     def test_send_failed_status_when_all_channels_fail(self):
@@ -216,10 +216,10 @@ class TestSendMessage:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo") as mock_task_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             mock_line.push_message.return_value = False
-            mock_sendgrid.send_email.return_value = False
+            mock_smtp.send_email.return_value = False
             service = AutoTouchService()
             result = service.send_message(
                 db, customer_id="C1", task_id=1, message_text="Hi!", channels=None, staff_id=90001
@@ -244,10 +244,10 @@ class TestSendMessage:
         with patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo") as mock_task_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             mock_line.push_message.return_value = True
-            mock_sendgrid.send_email.return_value = False
+            mock_smtp.send_email.return_value = False
             service = AutoTouchService()
             result = service.send_message(
                 db, customer_id="C1", task_id=1, message_text="Hi!", channels=None, staff_id=90001
@@ -269,7 +269,7 @@ class TestSendMessageDisabledByDefault:
              patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.task_repo") as mock_task_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             service = AutoTouchService()
             with pytest.raises(AutoTouchSendDisabledError):
@@ -280,7 +280,7 @@ class TestSendMessageDisabledByDefault:
         # The gate must short-circuit before any lookup, dispatch, or persistence.
         mock_repo.get_task_with_customer.assert_not_called()
         mock_line.push_message.assert_not_called()
-        mock_sendgrid.send_email.assert_not_called()
+        mock_smtp.send_email.assert_not_called()
         mock_repo.create_message.assert_not_called()
         mock_task_repo.mark_done.assert_not_called()
 
@@ -289,7 +289,7 @@ class TestSendMessageDisabledByDefault:
         with patch("app.services.auto_touch_service.settings.AUTO_TOUCH_SEND_ENABLED", False), \
              patch("app.services.auto_touch_service.auto_touch_repo") as mock_repo, \
              patch("app.services.auto_touch_service.line_client") as mock_line, \
-             patch("app.services.auto_touch_service.sendgrid_client") as mock_sendgrid:
+             patch("app.services.auto_touch_service.smtp_client") as mock_smtp:
             mock_repo.get_task_with_customer.return_value = row
             resp = TestClient(app).post(
                 "/api/v1/auto-touch/send/C1",
@@ -297,7 +297,7 @@ class TestSendMessageDisabledByDefault:
                 headers={"Authorization": f"Bearer {make_token()}"},
             )
             mock_line.push_message.assert_not_called()
-            mock_sendgrid.send_email.assert_not_called()
+            mock_smtp.send_email.assert_not_called()
 
         assert resp.status_code == 403
         assert "disabled" in resp.json()["detail"].lower()

@@ -13,7 +13,7 @@ from datetime import date, datetime, timezone
 
 from app.config import settings
 from app.repositories import auto_touch_repo, task_repo
-from app.services import line_client, sendgrid_client
+from app.services import line_client, smtp_client
 from app.services.message_generator import MessageGenerator
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ class AutoTouchService:
 
         if "email" in requested:
             if available["email"]:
-                ok = sendgrid_client.send_email(customer.email, "A note from your Hugo Boss associate", message_text)
+                ok = smtp_client.send_email(customer.email, "A note from your Hugo Boss associate", message_text)
                 status_email = "sent" if ok else "failed"
                 if ok:
                     channels_sent.append("email")

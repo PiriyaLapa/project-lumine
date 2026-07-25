@@ -49,25 +49,24 @@ Add these three before deploying the Auto-Touch routes.
 
 ---
 
-### 2. `SENDGRID_API_KEY`
+### 2. `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`
 
-**Used by**: `services/sendgrid_client.py` — transactional email delivery  
-**Required**: Yes — service raises `RuntimeError` on startup if missing  
-**Format**: `SG.xxxxxxxxxxxxxxxxxxxx...`  
-**Where to get it**:
-1. Go to [app.sendgrid.com](https://app.sendgrid.com)
-2. Settings → **API Keys** → **Create API Key**
-3. Name: `lumine-production`
-4. Permission: **Restricted Access → Mail Send → Full Access**
-5. Copy the key immediately (shown once only)
+**Used by**: `services/smtp_client.py` — transactional email delivery via a company email account  
+**Required**: Yes (all four) — service raises `RuntimeError` on startup if any are missing  
+**Status (2026-07-23): replaces SendGrid.** Architect has company authorization to use a
+personal/company email account for customer follow-up (same basis as existing personal
+LINE usage by staff). Volume stays under 50/day.
 
-**Free tier limits**: 100 emails/day — sufficient for personal use phase.
+**Values**:
+- `SMTP_HOST=smtp.gmail.com`
+- `SMTP_PORT=587`
+- `SMTP_USERNAME=` — the company email address
+- `SMTP_PASSWORD=` — for Gmail with 2FA enabled, this must be an **App Password**
+  (Google Account → Security → 2-Step Verification → App passwords), not the
+  regular account password. Provided separately as Render env vars by the architect.
 
-> **Status (2026-07-21): superseded.** Architect decided to use SMTP through
-> a company email account instead of SendGrid (volume stays under 50/day).
-> `sendgrid_client.py` is not yet replaced — see the `AUTO_TOUCH_SEND_ENABLED`
-> section below, which keeps sending off regardless of which email provider
-> ends up configured.
+See the `AUTO_TOUCH_SEND_ENABLED` section below — sending stays off regardless of
+these credentials until that's explicitly turned on.
 
 ---
 
@@ -132,7 +131,10 @@ For local testing of Auto-Touch features, add the same keys to `backend/.env`:
 
 ```
 ANTHROPIC_API_KEY=sk-ant-api03-...
-SENDGRID_API_KEY=SG....
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=...
+SMTP_PASSWORD=...
 LINE_CHANNEL_ACCESS_TOKEN=...
 ```
 
@@ -147,4 +149,4 @@ For local testing without real keys, the services can be mocked in tests.
 - Never log the value of any `*_API_KEY` or `*_TOKEN` variable
 - LINE Channel Access Token: if compromised, reissue from LINE Developers console immediately — old token is invalidated
 - Anthropic API key: if compromised, delete from console.anthropic.com and create a new one
-- SendGrid API key: scope it to **Mail Send only** — minimum permissions
+- SMTP password: use a dedicated App Password (not the main account password) where the provider supports it (e.g. Gmail) — minimum blast radius if leaked
