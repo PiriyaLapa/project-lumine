@@ -55,6 +55,7 @@ export default function AutoTouchCard({
         <Text style={styles.days}>{days_since_purchase}d since purchase</Text>
       </View>
       <Text style={styles.customerName}>{customer_name}</Text>
+      <Text style={styles.customerId}>Customer: {customer_id}</Text>
       {products.length > 0 && (
         <Text style={styles.products} numberOfLines={1}>
           {products.map((p) => p.product_clean).join(', ')}
@@ -113,6 +114,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: THEME.fontSize.md,
     marginBottom: 2,
+  },
+  customerId: {
+    color: THEME.colors.textSecondary,
+    fontSize: THEME.fontSize.xs,
+    marginBottom: THEME.spacing.xs,
   },
   products: {
     color: THEME.colors.textSecondary,
