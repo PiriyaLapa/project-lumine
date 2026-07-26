@@ -218,6 +218,7 @@ export default function DashboardScreen({ navigation }: Props) {
             <TaskCard
               id={item.id}
               customer_id={item.customer_id}
+              customer_name={item.customer_name}
               task_type={item.task_type}
               due_date={item.due_date}
               status={item.status}

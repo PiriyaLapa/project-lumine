@@ -109,6 +109,23 @@ class TestTransactionUpsert:
         db.add.assert_not_called()
         db.flush.assert_called_once()
 
+    def test_updates_customer_name_when_idoc_exists(self):
+        """upsert with existing idoc → customer_name backfilled too (mirrors sales_rep_name)."""
+        existing = MagicMock(spec=Transaction)
+        existing.sales_rep_name = None
+        existing.customer_name = None
+        db = MagicMock()
+
+        data = self._data(idoc="EXISTINGIDOC", sales_rep_name="Benz")
+        data["customer_name"] = "Pisit Boonchanya"
+
+        with patch("app.repositories.transaction_repo.get_by_idoc", return_value=existing):
+            txn, created = upsert(db, data)
+
+        assert created is False
+        assert txn.customer_name == "Pisit Boonchanya"
+        db.flush.assert_called_once()
+
     def test_does_not_insert_duplicate_row(self):
         """upsert with existing idoc → db.add never called (no duplicate INSERT)."""
         existing = MagicMock(spec=Transaction)

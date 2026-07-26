@@ -40,8 +40,8 @@ def bearer(role="sales_associate", staff_id=1, store_id=8901):
     return {"Authorization": f"Bearer {token}"}
 
 
-def make_task_row(task_id=1, status="Pending", staff_name="Benz"):
-    """(FollowUpTask mock, staff_name) — matches new repo return shape."""
+def make_task_row(task_id=1, status="Pending", staff_name="Benz", customer_name=None):
+    """(FollowUpTask mock, staff_name, customer_name) — matches repo return shape."""
     t = MagicMock(spec=FollowUpTask)
     t.id = task_id
     t.customer_id = "CUST001"
@@ -53,7 +53,7 @@ def make_task_row(task_id=1, status="Pending", staff_name="Benz"):
     t.created_at = "2026-04-19 00:00:00"
     t.updated_at = "2026-04-19 00:00:00"
     t.idoc_number = "IDOC001"
-    return (t, staff_name)
+    return (t, staff_name, customer_name)
 
 
 def mock_db_with_staff(staff):

@@ -584,6 +584,9 @@ components:
         staff_name:            # Display name of the sales associate; null for pre-migration-0005 tasks
           type: string
           nullable: true
+        customer_name:         # From SAP "Customer name" column; null for pre-migration-0010 tasks or if absent from source file
+          type: string
+          nullable: true
         created_at:
           type: string
           format: date-time
