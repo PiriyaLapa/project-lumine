@@ -122,7 +122,7 @@ API versioning: /api/v1/ prefix always
 - No print() statements
 - No files outside the structure in SRS Section 11
 - No endpoints without JWT validation (except login)
-- No customer names stored in database
+- Customer names ARE stored (SAP `Customer name` column, CRM import, manual registration) — this is intentional, confirmed 2026-07-26. Contact PII (phone, email, LINE ID) and log content remain restricted — see below.
 - No PII in log files
 - No changes to openapi.yaml without architect approval — STOP and ask first
 

@@ -32,8 +32,9 @@ def upsert(db: Session, data: dict) -> tuple[Transaction, bool]:
     existing = get_by_idoc(db, data["idoc_number"])
     if existing:
         existing.sales_rep_name = data.get("sales_rep_name")
+        existing.customer_name = data.get("customer_name")
         db.flush()
-        logger.info("transaction_repo: upserted idoc=%s (backfill sales_rep_name)", data["idoc_number"])
+        logger.info("transaction_repo: upserted idoc=%s (backfill sales_rep_name, customer_name)", data["idoc_number"])
         return existing, False
     transaction = Transaction(**data)
     db.add(transaction)

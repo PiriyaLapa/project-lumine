@@ -40,6 +40,7 @@ export default function DashboardScreen({ navigation }: Props) {
   const [role, setRole] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [autoTouchDue, setAutoTouchDue] = useState(0);
 
   // Read role once on mount — determines header title for N1/N2 verification
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function DashboardScreen({ navigation }: Props) {
   useFocusEffect(
     useCallback(() => {
       fetchTasks();
+      fetchAutoTouchStatus();
     }, [])
   );
 
@@ -78,6 +80,17 @@ export default function DashboardScreen({ navigation }: Props) {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Decorative badge — a failed fetch must not block or error the main task
+  // list, so this silently no-ops to 0 rather than surfacing loadError.
+  const fetchAutoTouchStatus = async () => {
+    try {
+      const response = await client.get('/api/v1/auto-touch/status');
+      setAutoTouchDue(response.data.pending);
+    } catch {
+      setAutoTouchDue(0);
     }
   };
 
@@ -127,6 +140,17 @@ export default function DashboardScreen({ navigation }: Props) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.headerActions}
         >
+          <TouchableOpacity
+            style={styles.historyButton}
+            onPress={() => navigation.navigate('AutoTouch')}
+          >
+            <Text style={styles.historyText}>Auto-Touch</Text>
+            {autoTouchDue > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{autoTouchDue}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.historyButton}
             onPress={() => navigation.navigate('FollowUpDashboard')}
@@ -194,6 +218,7 @@ export default function DashboardScreen({ navigation }: Props) {
             <TaskCard
               id={item.id}
               customer_id={item.customer_id}
+              customer_name={item.customer_name}
               task_type={item.task_type}
               due_date={item.due_date}
               status={item.status}
@@ -228,8 +253,22 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderWidth: 1,
     borderColor: THEME.colors.primary,
+    position: 'relative',
   },
   historyText: { color: THEME.colors.primary, fontSize: THEME.fontSize.sm, fontWeight: '600' },
+  badge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: THEME.colors.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: { color: THEME.colors.card, fontSize: THEME.fontSize.xs, fontWeight: '700' },
   uploadButton: {
     backgroundColor: THEME.colors.surface,
     borderRadius: THEME.radius.sm,

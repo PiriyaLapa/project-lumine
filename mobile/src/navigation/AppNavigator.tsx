@@ -19,6 +19,8 @@ import UploadScreen from '../screens/UploadScreen';
 import UploadHistoryScreen from '../screens/UploadHistoryScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import FollowUpDashboardScreen from '../screens/FollowUpDashboardScreen';
+import AutoTouchScreen from '../screens/AutoTouchScreen';
+import AutoTouchDetailScreen from '../screens/AutoTouchDetailScreen';
 
 import { tokenStorage, authEvents } from '../api/client';
 
@@ -38,6 +40,8 @@ export type RootStackParamList = {
   Upload: undefined;
   UploadHistory: undefined;
   FollowUpDashboard: undefined;
+  AutoTouch: undefined;
+  AutoTouchDetail: { taskId: number; customer_id: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -82,6 +86,8 @@ export default function AppNavigator() {
         <Stack.Screen name="Upload" component={UploadScreen} />
         <Stack.Screen name="UploadHistory" component={UploadHistoryScreen} />
         <Stack.Screen name="FollowUpDashboard" component={FollowUpDashboardScreen} />
+        <Stack.Screen name="AutoTouch" component={AutoTouchScreen} />
+        <Stack.Screen name="AutoTouchDetail" component={AutoTouchDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

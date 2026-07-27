@@ -5,11 +5,13 @@
 
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { THEME } from '../styles/theme';
 
 // Field names match openapi.yaml — do not rename
 export interface TaskCardProps {
   id: number;
   customer_id: string;       // LOCKED
+  customer_name: string | null; // LOCKED — null for pre-migration-0010 tasks or absent from source file
   task_type: '2D' | '2W' | '2M';  // LOCKED
   due_date: string;          // LOCKED
   status: 'Pending' | 'Done' | 'Superseded';  // LOCKED
@@ -32,6 +34,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function TaskCard({
   id,
   customer_id,
+  customer_name,
   task_type,
   due_date,
   status,
@@ -53,6 +56,7 @@ export default function TaskCard({
           <Text style={styles.badgeText}>{status}</Text>
         </View>
       </View>
+      {!!customer_name && <Text style={styles.customerName}>{customer_name}</Text>}
       <Text style={styles.customerId}>Customer: {customer_id}</Text>
       <Text style={[styles.dueDate, isOverdue && styles.overdueText]}>
         Due: {due_date}{isOverdue ? ' — OVERDUE' : ''}
@@ -102,6 +106,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 11,
     fontWeight: '700',
+  },
+  customerName: {
+    color: THEME.colors.text,
+    fontWeight: '700',
+    fontSize: THEME.fontSize.md,
+    marginBottom: 2,
   },
   customerId: {
     color: '#9A9A9A',

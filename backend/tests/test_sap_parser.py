@@ -310,3 +310,51 @@ class TestSAPParser:
         file = make_csv([row1, row2, row3])
         result = parser.parse(file, filename="test.csv")
         assert len(result.records) == 3
+
+
+# ---------------------------------------------------------------------------
+# Optional customer_name field — TDD, written before sap_parser.py /
+# sap_column_map.json are updated. Red until "Customer name" is mapped.
+# ---------------------------------------------------------------------------
+
+COLUMN_MAP_WITH_CUSTOMER_NAME = {
+    **VALID_COLUMN_MAP,
+    "mappings": {**VALID_COLUMN_MAP["mappings"], "Customer name": "customer_name"},
+}
+
+
+class TestOptionalCustomerNameField:
+    def test_customer_name_column_extracted_when_present(self):
+        """A mapped 'Customer name' column is passed through as customer_name."""
+        row = {**VALID_ROW, "Customer name": "Pisit Boonchanya"}
+        with patch(
+            "app.services.sap_parser.SAPParser._load_column_map",
+            return_value=COLUMN_MAP_WITH_CUSTOMER_NAME,
+        ):
+            parser = SAPParser(staff_employee_code="EMP001")
+            file = make_csv([row])
+            result = parser.parse(file, filename="test.csv")
+        assert result.records[0]["customer_name"] == "Pisit Boonchanya"
+
+    def test_customer_name_absent_when_column_not_mapped(self):
+        """No 'Customer name' mapping configured — field simply isn't produced (optional)."""
+        parser = self._make_parser()  # VALID_COLUMN_MAP has no customer_name mapping
+        file = make_csv([VALID_ROW])
+        result = parser.parse(file, filename="test.csv")
+        assert "customer_name" not in result.records[0]
+
+    def test_customer_name_blank_cell_becomes_none(self):
+        """Mapped column present but blank for a row → None, not an empty string."""
+        row = {**VALID_ROW, "Customer name": ""}
+        with patch(
+            "app.services.sap_parser.SAPParser._load_column_map",
+            return_value=COLUMN_MAP_WITH_CUSTOMER_NAME,
+        ):
+            parser = SAPParser(staff_employee_code="EMP001")
+            file = make_csv([row])
+            result = parser.parse(file, filename="test.csv")
+        assert result.records[0]["customer_name"] is None
+
+    def _make_parser(self, employee_code: str = "EMP001") -> SAPParser:
+        with patch("app.services.sap_parser.SAPParser._load_column_map", return_value=VALID_COLUMN_MAP):
+            return SAPParser(staff_employee_code=employee_code)
