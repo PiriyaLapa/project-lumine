@@ -34,6 +34,7 @@ class FollowUpTaskResponse(BaseModel):
     calculated_from: date_type  # LOCKED
     status: str            # LOCKED: Pending | Done | Superseded
     staff_name: str | None = None  # LOCKED — null for tasks uploaded before migration 0005
+    customer_name: str | None = None  # LOCKED — null for tasks uploaded before migration 0010 or absent from source file
     created_at: str
     updated_at: str
 
@@ -63,7 +64,7 @@ def get_tasks(
     else:
         tasks = task_repo.get_tasks_for_staff(db, current_staff.staff_id)
 
-    return [_serialize(t, name) for t, name in tasks]
+    return [_serialize(t, name, cust_name) for t, name, cust_name in tasks]
 
 
 @router.patch("/tasks/{task_id}", response_model=FollowUpTaskResponse)
@@ -100,8 +101,9 @@ def update_task(
     db.commit()
 
     staff_name = task_repo.get_staff_name_for_task(db, updated.idoc_number)
+    customer_name = task_repo.get_customer_name_for_task(db, updated.idoc_number)
     logger.info("Task %d marked Done by staff_id=%d", task_id, current_staff.staff_id)
-    return _serialize(updated, staff_name)
+    return _serialize(updated, staff_name, customer_name)
 
 
 # ---------------------------------------------------------------------------
@@ -128,7 +130,7 @@ def _assert_task_ownership(db: Session, task, current_staff: TokenPayload):
         )
 
 
-def _serialize(task, staff_name: str) -> dict:
+def _serialize(task, staff_name: str, customer_name: str | None = None) -> dict:
     return {
         "id": task.id,
         "customer_id": task.customer_id,
@@ -138,6 +140,7 @@ def _serialize(task, staff_name: str) -> dict:
         "calculated_from": task.calculated_from,
         "status": task.status,
         "staff_name": staff_name,
+        "customer_name": customer_name,
         "created_at": str(task.created_at),
         "updated_at": str(task.updated_at),
     }

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, Numeric, String, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -11,9 +11,12 @@ class Transaction(Base):
     posting_date = Column(Date, nullable=False, index=True)
     ean = Column(String(50), nullable=True)
     material_desc = Column(String(500), nullable=True)
-    customer_id = Column(String(100), nullable=False, index=True)  # SAP code — no name stored (PDPA)
+    customer_id = Column(String(100), nullable=False, index=True)  # SAP code
     staff_id = Column(Integer, ForeignKey("staff.id"), nullable=False, index=True)
     sales_rep_name = Column(String(255), nullable=True)  # SAP "Sales Rep.name" — null for pre-0005 rows
+    customer_name = Column(String(255), nullable=True)  # SAP "Customer name" — null for pre-0010 rows or if absent from source file
+    price = Column(Numeric(10, 2), nullable=True)  # null for pre-0009 rows
+    returned = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     staff = relationship("Staff", back_populates="transactions")

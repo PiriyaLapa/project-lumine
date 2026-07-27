@@ -15,6 +15,7 @@ class FollowUpTask(Base):
     due_date = Column(Date, nullable=False)
     calculated_from = Column(Date, nullable=False)   # the posting_date used
     status = Column(String(20), nullable=False, default="Pending")  # Pending | Done | Superseded
+    skipped_until = Column(Date, nullable=True)  # Auto-Touch: excluded from today list until this date
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
 

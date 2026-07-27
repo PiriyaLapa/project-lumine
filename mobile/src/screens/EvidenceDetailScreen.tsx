@@ -194,6 +194,9 @@ export default function EvidenceDetailScreen({ navigation, route }: Props) {
 
         {/* Photo */}
         <Text style={styles.label}>Photo</Text>
+        <Text style={styles.photoHint}>
+          Product photo, or a screenshot showing the customer was contacted (LINE, email, etc.)
+        </Text>
         {displayImageUri ? (
           <View style={styles.imageWrapper}>
             <Image
@@ -270,6 +273,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: THEME.colors.divider,
     minHeight: 120,
+  },
+  photoHint: {
+    fontSize: THEME.fontSize.xs,
+    color: THEME.colors.textMuted,
+    marginBottom: THEME.spacing.sm,
   },
   imageWrapper: { borderRadius: THEME.radius.md, overflow: 'hidden', marginBottom: THEME.spacing.sm },
   evidenceImage: { width: '100%', height: 220, borderRadius: THEME.radius.md },

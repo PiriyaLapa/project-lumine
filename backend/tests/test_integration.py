@@ -148,7 +148,7 @@ class TestTasksEndpoint:
 
         task = make_task()
         with patch("app.routers.tasks.task_repo") as mock_repo:
-            mock_repo.get_tasks_for_staff.return_value = [(task, "Benz")]
+            mock_repo.get_tasks_for_staff.return_value = [(task, "Benz", "Pisit Boonchanya")]
             resp = client.get("/api/v1/tasks", headers=bearer())
 
         app.dependency_overrides.clear()
@@ -159,7 +159,7 @@ class TestTasksEndpoint:
         assert len(data) == 1
         for field in ["id", "customer_id", "task_type", "task_basis",
                       "due_date", "calculated_from", "status", "staff_name",
-                      "created_at", "updated_at"]:
+                      "customer_name", "created_at", "updated_at"]:
             assert field in data[0], f"Missing field: {field}"
 
     def test_manager_gets_store_tasks(self):
@@ -169,7 +169,7 @@ class TestTasksEndpoint:
         client = TestClient(app)
 
         with patch("app.routers.tasks.task_repo") as mock_repo:
-            mock_repo.get_tasks_for_store.return_value = [(make_task(), "Benz")]
+            mock_repo.get_tasks_for_store.return_value = [(make_task(), "Benz", "Pisit Boonchanya")]
             resp = client.get("/api/v1/tasks", headers=bearer(role="store_manager", staff_id=2))
 
             mock_repo.get_tasks_for_store.assert_called_once()
@@ -218,6 +218,7 @@ class TestTaskPatchEndpoint:
             mock_repo.get_by_id.return_value = task
             mock_repo.mark_done.return_value = done_task
             mock_repo.get_staff_name_for_task.return_value = "Benz"
+            mock_repo.get_customer_name_for_task.return_value = "Pisit Boonchanya"
             resp = client.patch(
                 "/api/v1/tasks/1",
                 json={"status": "Done"},
@@ -354,3 +355,96 @@ class TestKPIEndpoint:
         app.dependency_overrides.clear()
         assert resp.status_code == 200
         assert resp.json()["staff_id"] is None
+
+
+class TestManagerDashboardEndpoint:
+    def _make_result(self, store_id, staff_breakdown):
+        from app.services.dashboard_service import DashboardResult
+        return DashboardResult(
+            store_id=store_id, period="today", date_from=date(2026, 7, 21), date_to=date(2026, 7, 21),
+            staff_breakdown=staff_breakdown,
+            store_totals=staff_breakdown[0] if len(staff_breakdown) == 1 else staff_breakdown[-1],
+        )
+
+    def _make_stats(self, staff_id=1, staff_name="Jane"):
+        from app.services.dashboard_service import StaffFollowUpStats
+        return StaffFollowUpStats(
+            staff_id=staff_id, staff_name=staff_name, tasks_due=5, tasks_done=3,
+            tasks_pending=2, tasks_skipped=0, messages_sent_line=2, messages_sent_email=1,
+            customers_followed_up=3,
+        )
+
+    def test_no_token_returns_403(self):
+        client = TestClient(app)
+        assert client.get("/api/v1/reports/dashboard").status_code == 403
+
+    def test_associate_gets_200_with_single_row_breakdown(self):
+        app.dependency_overrides[get_db] = mock_db_with_staff(make_staff())
+        client = TestClient(app)
+
+        own_row = self._make_stats(staff_id=1, staff_name="Benz")
+        result = self._make_result(store_id=5, staff_breakdown=[own_row])
+
+        with patch("app.routers.reports.DashboardService.get_staff_dashboard", return_value=result) as mock_staff:
+            resp = client.get("/api/v1/reports/dashboard", headers=bearer())
+            mock_staff.assert_called_once()
+
+        app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data["staff_breakdown"]) == 1
+        for field in [
+            "staff_id", "staff_name", "tasks_due", "tasks_done", "tasks_pending",
+            "tasks_skipped", "messages_sent_line", "messages_sent_email", "customers_followed_up",
+        ]:
+            assert field in data["store_totals"], f"Missing field: {field}"
+
+    def test_manager_gets_200_with_multi_row_breakdown(self):
+        manager = make_staff(role="store_manager", staff_id=2)
+        app.dependency_overrides[get_db] = mock_db_with_staff(manager)
+        client = TestClient(app)
+
+        breakdown = [self._make_stats(staff_id=1, staff_name="Jane"), self._make_stats(staff_id=2, staff_name="John")]
+        result = self._make_result(store_id=5, staff_breakdown=breakdown)
+
+        with patch("app.routers.reports.DashboardService.get_manager_dashboard", return_value=result) as mock_mgr, \
+             patch("app.routers.reports.DashboardService.get_staff_dashboard") as mock_staff:
+            resp = client.get(
+                "/api/v1/reports/dashboard", headers=bearer(role="store_manager", staff_id=2)
+            )
+            mock_mgr.assert_called_once()
+            mock_staff.assert_not_called()
+
+        app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        assert len(resp.json()["staff_breakdown"]) == 2
+
+    def test_default_period_is_today(self):
+        app.dependency_overrides[get_db] = mock_db_with_staff(make_staff())
+        client = TestClient(app)
+
+        result = self._make_result(store_id=5, staff_breakdown=[self._make_stats()])
+        with patch("app.routers.reports.DashboardService.get_staff_dashboard", return_value=result) as mock_staff:
+            client.get("/api/v1/reports/dashboard", headers=bearer())
+            assert mock_staff.call_args.kwargs["period"] == "today"
+
+        app.dependency_overrides.clear()
+
+    def test_invalid_period_returns_422(self):
+        app.dependency_overrides[get_db] = mock_db_with_staff(make_staff())
+        client = TestClient(app)
+        resp = client.get("/api/v1/reports/dashboard?period=year", headers=bearer())
+        app.dependency_overrides.clear()
+        assert resp.status_code == 422
+
+    def test_manager_scoped_to_own_store_id(self):
+        manager = make_staff(role="store_manager", staff_id=2, store_id=9)
+        app.dependency_overrides[get_db] = mock_db_with_staff(manager)
+        client = TestClient(app)
+
+        result = self._make_result(store_id=9, staff_breakdown=[self._make_stats()])
+        with patch("app.routers.reports.DashboardService.get_manager_dashboard", return_value=result) as mock_mgr:
+            client.get("/api/v1/reports/dashboard", headers=bearer(role="store_manager", staff_id=2, store_id=9))
+            assert mock_mgr.call_args.kwargs["store_id"] == 9
+
+        app.dependency_overrides.clear()

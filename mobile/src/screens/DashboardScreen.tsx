@@ -39,6 +39,8 @@ export default function DashboardScreen({ navigation }: Props) {
   const [isOffline, setIsOffline] = useState(false);
   const [role, setRole] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [autoTouchDue, setAutoTouchDue] = useState(0);
 
   // Read role once on mount — determines header title for N1/N2 verification
   useEffect(() => {
@@ -49,6 +51,7 @@ export default function DashboardScreen({ navigation }: Props) {
   useFocusEffect(
     useCallback(() => {
       fetchTasks();
+      fetchAutoTouchStatus();
     }, [])
   );
 
@@ -60,6 +63,7 @@ export default function DashboardScreen({ navigation }: Props) {
       const fetched: CachedTask[] = response.data;
       setTasks(fetched);
       setIsOffline(false);
+      setLoadError(null);
       await offlineCache.saveTasks(fetched); // update cache for offline use
     } catch (error: any) {
       if (!error.response) {
@@ -67,9 +71,26 @@ export default function DashboardScreen({ navigation }: Props) {
         setIsOffline(true);
         const cached = await offlineCache.getTasks();
         setTasks(cached);
+      } else {
+        // Server responded with an error (401/403/500/etc.) — must not fall
+        // through silently, since the empty state below reads as "you're
+        // all caught up." Surface it explicitly instead of showing a false
+        // "No pending tasks. Well done!" for what's actually a failed load.
+        setLoadError('Could not load your tasks. Pull down to try again.');
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Decorative badge — a failed fetch must not block or error the main task
+  // list, so this silently no-ops to 0 rather than surfacing loadError.
+  const fetchAutoTouchStatus = async () => {
+    try {
+      const response = await client.get('/api/v1/auto-touch/status');
+      setAutoTouchDue(response.data.pending);
+    } catch {
+      setAutoTouchDue(0);
     }
   };
 
@@ -114,7 +135,28 @@ export default function DashboardScreen({ navigation }: Props) {
         <Text style={styles.title}>
           {role === 'store_manager' ? 'Store Dashboard' : 'My Tasks'}
         </Text>
-        <View style={styles.headerActions}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.headerActions}
+        >
+          <TouchableOpacity
+            style={styles.historyButton}
+            onPress={() => navigation.navigate('AutoTouch')}
+          >
+            <Text style={styles.historyText}>Auto-Touch</Text>
+            {autoTouchDue > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{autoTouchDue}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.historyButton}
+            onPress={() => navigation.navigate('FollowUpDashboard')}
+          >
+            <Text style={styles.historyText}>Follow-Up Report</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.historyButton}
             onPress={() => navigation.navigate('CompletedTasks')}
@@ -130,7 +172,7 @@ export default function DashboardScreen({ navigation }: Props) {
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </View>
 
       {loading && tasks.length === 0 ? (
@@ -176,6 +218,7 @@ export default function DashboardScreen({ navigation }: Props) {
             <TaskCard
               id={item.id}
               customer_id={item.customer_id}
+              customer_name={item.customer_name}
               task_type={item.task_type}
               due_date={item.due_date}
               status={item.status}
@@ -184,7 +227,7 @@ export default function DashboardScreen({ navigation }: Props) {
             />
           )}
           ListEmptyComponent={
-            <Text style={styles.empty}>No pending tasks. Well done!</Text>
+            <Text style={styles.empty}>{loadError ?? 'No pending tasks. Well done!'}</Text>
           }
           contentContainerStyle={styles.list}
         />
@@ -210,8 +253,22 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderWidth: 1,
     borderColor: THEME.colors.primary,
+    position: 'relative',
   },
   historyText: { color: THEME.colors.primary, fontSize: THEME.fontSize.sm, fontWeight: '600' },
+  badge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: THEME.colors.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: { color: THEME.colors.card, fontSize: THEME.fontSize.xs, fontWeight: '700' },
   uploadButton: {
     backgroundColor: THEME.colors.surface,
     borderRadius: THEME.radius.sm,

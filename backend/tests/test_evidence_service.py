@@ -233,3 +233,124 @@ class TestEvidenceRecordCreation:
 
         call_kwargs = mock_repo.create.call_args[1]
         assert call_kwargs["notes"] == "Customer was happy with the product."
+
+
+# ---------------------------------------------------------------------------
+# EvidenceService.update (SRS §5 FR-04 — Editable Evidence)
+# ---------------------------------------------------------------------------
+
+class TestEvidenceUpdate:
+    def test_update_with_new_image_under_800kb_uploads_and_returns_new_uri(self):
+        db = make_db()
+        image = jpeg_bytes(300)
+
+        with patch("app.services.evidence_service.drive_client") as mock_drive, \
+             patch("app.services.evidence_service.evidence_repo") as mock_repo:
+            mock_drive.upload.return_value = "https://drive.google.com/file/new"
+            mock_repo.update.return_value = MagicMock(
+                id=5, notes="kept", image_uri="https://drive.google.com/file/new",
+                image_size_kb=300, timestamp="2026-07-27T00:00:00",
+            )
+
+            result = EvidenceService.update(
+                db=db,
+                evidence_id=5,
+                notes=None,
+                image_bytes=image,
+                filename="photo.jpg",
+            )
+
+        mock_drive.upload.assert_called_once()
+        uploaded_filename = mock_drive.upload.call_args[0][1]
+        assert uploaded_filename.startswith("evidence_5_")
+        assert result.image_uri == "https://drive.google.com/file/new"
+        assert result.drive_failed is False
+        call_kwargs = mock_repo.update.call_args[1]
+        assert call_kwargs["image_uri"] == "https://drive.google.com/file/new"
+        assert call_kwargs["image_size_kb"] == pytest.approx(300, abs=5)
+
+    def test_update_with_image_over_800kb_is_rejected_with_error(self):
+        db = make_db()
+        image = jpeg_bytes(900)
+
+        with pytest.raises(ValueError, match="800"):
+            EvidenceService.update(
+                db=db,
+                evidence_id=5,
+                notes=None,
+                image_bytes=image,
+                filename="photo.jpg",
+            )
+
+    def test_update_drive_failure_keeps_old_uri(self):
+        """Drive failure on update is non-fatal — repo.update gets image_uri=None so it skips the image fields and keeps the old photo."""
+        db = make_db()
+        image = jpeg_bytes(200)
+
+        with patch("app.services.evidence_service.drive_client") as mock_drive, \
+             patch("app.services.evidence_service.evidence_repo") as mock_repo:
+            mock_drive.upload.side_effect = Exception("Drive API unavailable")
+            mock_repo.update.return_value = MagicMock(
+                id=5, notes="kept", image_uri="https://drive.google.com/file/old",
+                image_size_kb=120, timestamp="2026-07-27T00:00:00",
+            )
+
+            result = EvidenceService.update(
+                db=db,
+                evidence_id=5,
+                notes=None,
+                image_bytes=image,
+                filename="photo.jpg",
+            )
+
+        assert result.drive_failed is True
+        # Real (old) URI comes back from the repo record, not None
+        assert result.image_uri == "https://drive.google.com/file/old"
+        call_kwargs = mock_repo.update.call_args[1]
+        assert call_kwargs["image_uri"] is None  # repo.update skips image fields when None
+
+    def test_update_with_no_image_bytes_keeps_existing_photo(self):
+        db = make_db()
+
+        with patch("app.services.evidence_service.drive_client") as mock_drive, \
+             patch("app.services.evidence_service.evidence_repo") as mock_repo:
+            mock_repo.update.return_value = MagicMock(
+                id=5, notes="Updated notes", image_uri="https://drive.google.com/file/old",
+                image_size_kb=120, timestamp="2026-07-27T00:00:00",
+            )
+
+            result = EvidenceService.update(
+                db=db,
+                evidence_id=5,
+                notes="Updated notes",
+                image_bytes=None,
+                filename=None,
+            )
+
+        mock_drive.upload.assert_not_called()
+        assert result.notes == "Updated notes"
+        assert result.image_uri == "https://drive.google.com/file/old"
+        call_kwargs = mock_repo.update.call_args[1]
+        assert call_kwargs["image_uri"] is None
+        assert call_kwargs["notes"] == "Updated notes"
+
+    def test_update_with_notes_none_passes_through_to_keep_existing(self):
+        db = make_db()
+
+        with patch("app.services.evidence_service.drive_client") as mock_drive, \
+             patch("app.services.evidence_service.evidence_repo") as mock_repo:
+            mock_repo.update.return_value = MagicMock(
+                id=5, notes="Original notes", image_uri="https://drive.google.com/file/old",
+                image_size_kb=120, timestamp="2026-07-27T00:00:00",
+            )
+
+            EvidenceService.update(
+                db=db,
+                evidence_id=5,
+                notes=None,
+                image_bytes=None,
+                filename=None,
+            )
+
+        call_kwargs = mock_repo.update.call_args[1]
+        assert call_kwargs["notes"] is None

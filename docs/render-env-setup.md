@@ -49,19 +49,24 @@ Add these three before deploying the Auto-Touch routes.
 
 ---
 
-### 2. `SENDGRID_API_KEY`
+### 2. `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`
 
-**Used by**: `services/sendgrid_client.py` — transactional email delivery  
-**Required**: Yes — service raises `RuntimeError` on startup if missing  
-**Format**: `SG.xxxxxxxxxxxxxxxxxxxx...`  
-**Where to get it**:
-1. Go to [app.sendgrid.com](https://app.sendgrid.com)
-2. Settings → **API Keys** → **Create API Key**
-3. Name: `lumine-production`
-4. Permission: **Restricted Access → Mail Send → Full Access**
-5. Copy the key immediately (shown once only)
+**Used by**: `services/smtp_client.py` — transactional email delivery via a company email account  
+**Required**: Yes (all four) — service raises `RuntimeError` on startup if any are missing  
+**Status (2026-07-23): replaces SendGrid.** Architect has company authorization to use a
+personal/company email account for customer follow-up (same basis as existing personal
+LINE usage by staff). Volume stays under 50/day.
 
-**Free tier limits**: 100 emails/day — sufficient for personal use phase.
+**Values**:
+- `SMTP_HOST=smtp.gmail.com`
+- `SMTP_PORT=587`
+- `SMTP_USERNAME=` — the company email address
+- `SMTP_PASSWORD=` — for Gmail with 2FA enabled, this must be an **App Password**
+  (Google Account → Security → 2-Step Verification → App passwords), not the
+  regular account password. Provided separately as Render env vars by the architect.
+
+See the `AUTO_TOUCH_SEND_ENABLED` section below — sending stays off regardless of
+these credentials until that's explicitly turned on.
 
 ---
 
@@ -78,6 +83,29 @@ Add these three before deploying the Auto-Touch routes.
 5. Click **Issue** (or copy existing token if already issued)
 
 > Note: This is the **long-lived** token — not the short-lived one. It does not expire unless you explicitly reissue it.
+
+---
+
+### 4. `AUTO_TOUCH_SEND_ENABLED` — do NOT set to `true` on Render yet
+
+**Used by**: `services/auto_touch_service.py` (`send_message`) — gates the `POST /api/v1/auto-touch/send/{customer_id}` endpoint  
+**Required**: No — defaults to `false` (disabled) when unset  
+**Format**: `true` or `false`
+
+**Status (2026-07-21): intentionally left unset / `false` in production.**
+Automated customer messaging (LINE push + email) requires company
+authorization that has not been granted yet. This flag is a second,
+independent safety layer on top of "just don't set the LINE/email
+credentials" — even if SMTP vars and
+`LINE_CHANNEL_ACCESS_TOKEN` are all configured, `send_message()` refuses
+to dispatch anything while this is `false`. `generate-message` (drafting)
+is unaffected and stays fully functional regardless of this flag — only
+the actual send is gated.
+
+**Do not set this to `true` on Render until the architect explicitly
+authorizes automated customer messaging.** When that happens, this doc
+should be updated with the date and who approved it, alongside flipping
+the var.
 
 ---
 
@@ -103,7 +131,10 @@ For local testing of Auto-Touch features, add the same keys to `backend/.env`:
 
 ```
 ANTHROPIC_API_KEY=sk-ant-api03-...
-SENDGRID_API_KEY=SG....
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=...
+SMTP_PASSWORD=...
 LINE_CHANNEL_ACCESS_TOKEN=...
 ```
 
@@ -118,4 +149,4 @@ For local testing without real keys, the services can be mocked in tests.
 - Never log the value of any `*_API_KEY` or `*_TOKEN` variable
 - LINE Channel Access Token: if compromised, reissue from LINE Developers console immediately — old token is invalidated
 - Anthropic API key: if compromised, delete from console.anthropic.com and create a new one
-- SendGrid API key: scope it to **Mail Send only** — minimum permissions
+- SMTP password: use a dedicated App Password (not the main account password) where the provider supports it (e.g. Gmail) — minimum blast radius if leaked

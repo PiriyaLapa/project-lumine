@@ -65,7 +65,7 @@ Phases 1–7 complete. Deployed.
 - Mobile: APK v1.1.0 — Upload History + conflict detection (emulator verified ✅)
 - Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
 
-139/139 tests pass.
+311/311 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-27).
 
 ## APK Versioning
 Source of truth: mobile/app.json — version + versionCode.
@@ -122,7 +122,7 @@ API versioning: /api/v1/ prefix always
 - No print() statements
 - No files outside the structure in SRS Section 11
 - No endpoints without JWT validation (except login)
-- No customer names stored in database
+- Customer names ARE stored (SAP `Customer name` column, CRM import, manual registration) — this is intentional, confirmed 2026-07-26. Contact PII (phone, email, LINE ID) and log content remain restricted — see below.
 - No PII in log files
 - No changes to openapi.yaml without architect approval — STOP and ask first
 

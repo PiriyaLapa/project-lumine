@@ -127,6 +127,7 @@ async def upload_sap_file(
                 "ean": record.get("ean"),
                 "material_desc": record.get("material_desc"),
                 "sales_rep_name": record.get("sales_rep_name"),
+                "customer_name": record.get("customer_name"),
             }
 
             if force:

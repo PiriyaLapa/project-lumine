@@ -24,14 +24,14 @@ def get_pending_by_customer(db: Session, customer_id: str) -> list[FollowUpTask]
 
 def get_tasks_for_staff(db: Session, staff_id: int) -> list[tuple]:
     """
-    Return (FollowUpTask, sales_rep_name) tuples for a sales associate.
-    Uses transactions.sales_rep_name — no Staff JOIN needed for display name.
+    Return (FollowUpTask, sales_rep_name, customer_name) tuples for a sales associate.
+    Uses transactions.sales_rep_name/customer_name — no Staff/Customer JOIN needed for display names.
     Multi-staff isolation: associates see only their own tasks (via transaction join).
     """
     from app.models.transaction import Transaction
 
     return (
-        db.query(FollowUpTask, Transaction.sales_rep_name)
+        db.query(FollowUpTask, Transaction.sales_rep_name, Transaction.customer_name)
         .join(Transaction, FollowUpTask.idoc_number == Transaction.idoc_number)
         .filter(Transaction.staff_id == staff_id)
         .order_by(FollowUpTask.due_date.asc())
@@ -41,14 +41,14 @@ def get_tasks_for_staff(db: Session, staff_id: int) -> list[tuple]:
 
 def get_tasks_for_store(db: Session, store_id: int) -> list[tuple]:
     """
-    Return (FollowUpTask, sales_rep_name) tuples for all staff under a store.
-    Uses transactions.sales_rep_name — no Staff JOIN needed for display name.
+    Return (FollowUpTask, sales_rep_name, customer_name) tuples for all staff under a store.
+    Uses transactions.sales_rep_name/customer_name — no Staff/Customer JOIN needed for display names.
     """
     from app.models.transaction import Transaction
     from app.models.staff import Staff
 
     return (
-        db.query(FollowUpTask, Transaction.sales_rep_name)
+        db.query(FollowUpTask, Transaction.sales_rep_name, Transaction.customer_name)
         .join(Transaction, FollowUpTask.idoc_number == Transaction.idoc_number)
         .join(Staff, Transaction.staff_id == Staff.id)
         .filter(Staff.store_id == store_id, Staff.deleted_at.is_(None))
@@ -71,6 +71,18 @@ def get_staff_name_for_task(db: Session, idoc_number: str) -> str:
         .first()
     )
     return result[0] if result and result[0] else ""
+
+
+def get_customer_name_for_task(db: Session, idoc_number: str) -> str | None:
+    """Return customer_name from the transaction linked to this task."""
+    from app.models.transaction import Transaction
+
+    result = (
+        db.query(Transaction.customer_name)
+        .filter(Transaction.idoc_number == idoc_number)
+        .first()
+    )
+    return result[0] if result else None
 
 
 def create_tasks(db: Session, tasks: list[dict]) -> list[FollowUpTask]:
