@@ -34,6 +34,8 @@ export const THEME = {
     uploadSuccessBg: '#dcfce7',
     uploadError: '#DC2626',
     uploadErrorBg: '#fee2e2',
+
+    overlay: 'rgba(0,0,0,0.4)', // modal/drawer backdrop scrim
   },
 
   /**

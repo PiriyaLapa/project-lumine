@@ -10,7 +10,8 @@ from pydantic import BaseModel, field_validator, model_validator
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.services.auth_service import AuthService, AuthError
+from app.middleware.auth import get_current_staff
+from app.services.auth_service import AuthService, AuthError, TokenPayload
 from app.repositories import staff_repo
 
 logger = logging.getLogger(__name__)
@@ -91,6 +92,13 @@ class RefreshRequest(BaseModel):
 class RefreshResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class StaffProfileResponse(BaseModel):
+    staff_id: int
+    name: str
+    email: str
+    role: str
 
 
 # ---------------------------------------------------------------------------
@@ -197,3 +205,21 @@ def refresh(body: RefreshRequest):
         )
 
     return RefreshResponse(access_token=new_access_token)
+
+
+@router.get("/me", response_model=StaffProfileResponse)
+def get_me(
+    db: Session = Depends(get_db),
+    current_staff: TokenPayload = Depends(get_current_staff),
+):
+    """Return the authenticated staff member's own name/email/role — powers the drawer profile header."""
+    staff = staff_repo.get_by_id(db, current_staff.staff_id)
+    if not staff:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Staff not found.")
+
+    return StaffProfileResponse(
+        staff_id=staff.id,
+        name=staff.name,
+        email=staff.email,
+        role=staff.role,
+    )
