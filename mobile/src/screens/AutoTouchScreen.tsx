@@ -101,6 +101,9 @@ export default function AutoTouchScreen({ navigation }: Props) {
               onPress={(taskId, customerId) =>
                 navigation.navigate('AutoTouchDetail', { taskId, customer_id: customerId })
               }
+              onCustomerPress={(customerId, customerName) =>
+                navigation.navigate('CustomerProfile', { customer_id: customerId, customer_name: customerName })
+              }
             />
           )}
           ListEmptyComponent={

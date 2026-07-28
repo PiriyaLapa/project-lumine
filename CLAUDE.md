@@ -39,6 +39,7 @@ JWT required on all endpoints except:
 - GET /health  (ops probe — no auth, not in openapi.yaml)
 Staff can only access their own data (staff_id from JWT, never from request body).
 Manager role can access all staff data within their store_id.
+Exception: `GET /api/v1/customers/{customer_id}`, `.../transactions`, `.../tasks` (Customer Profile) are store-wide for any role — any staff member sees a customer's full history with all staff in their own store_id (never cross-store). Approved 2026-07-28 for the Customer Profile feature.
 
 ### Logging Rules
 Use Python logging module only. Never print().

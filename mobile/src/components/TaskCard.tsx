@@ -17,6 +17,7 @@ export interface TaskCardProps {
   status: 'Pending' | 'Done' | 'Superseded';  // LOCKED
   staff_name: string | null; // LOCKED — null for pre-migration-0005 tasks
   onPress: (taskId: number) => void;
+  onCustomerPress?: (customerId: string, customerName: string | null) => void;
 }
 
 const TASK_TYPE_LABELS: Record<string, string> = {
@@ -40,6 +41,7 @@ export default function TaskCard({
   status,
   staff_name,
   onPress,
+  onCustomerPress,
 }: TaskCardProps) {
   const isOverdue =
     status === 'Pending' && new Date(due_date) < new Date();
@@ -56,8 +58,14 @@ export default function TaskCard({
           <Text style={styles.badgeText}>{status}</Text>
         </View>
       </View>
-      {!!customer_name && <Text style={styles.customerName}>{customer_name}</Text>}
-      <Text style={styles.customerId}>Customer: {customer_id}</Text>
+      <TouchableOpacity
+        disabled={!onCustomerPress}
+        onPress={() => onCustomerPress?.(customer_id, customer_name)}
+        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+      >
+        {!!customer_name && <Text style={styles.customerName}>{customer_name}</Text>}
+        <Text style={styles.customerId}>Customer: {customer_id}</Text>
+      </TouchableOpacity>
       <Text style={[styles.dueDate, isOverdue && styles.overdueText]}>
         Due: {due_date}{isOverdue ? ' — OVERDUE' : ''}
       </Text>
@@ -70,31 +78,31 @@ export default function TaskCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: THEME.colors.card,
+    borderRadius: THEME.radius.md,
+    padding: THEME.spacing.md,
+    marginBottom: THEME.spacing.sm,
     borderLeftWidth: 4,
-    borderLeftColor: '#F0EBE3',
-    shadowColor: '#C9974A',
+    borderLeftColor: THEME.colors.divider,
+    shadowColor: THEME.colors.primaryShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
   overdue: {
-    borderLeftColor: '#DC2626',
+    borderLeftColor: THEME.colors.error,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: THEME.spacing.xs,
   },
   taskType: {
-    color: '#1A1A1A',
+    color: THEME.colors.text,
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: THEME.fontSize.sm,
     flex: 1,
   },
   badge: {
@@ -103,8 +111,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   badgeText: {
-    color: '#fff',
-    fontSize: 11,
+    color: THEME.colors.card,
+    fontSize: THEME.fontSize.xs,
     fontWeight: '700',
   },
   customerName: {
@@ -114,21 +122,21 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   customerId: {
-    color: '#9A9A9A',
-    fontSize: 13,
+    color: THEME.colors.textSecondary,
+    fontSize: THEME.fontSize.sm,
     marginBottom: 2,
   },
   soldBy: {
-    color: '#9A9A9A',
-    fontSize: 12,
+    color: THEME.colors.soldBy,
+    fontSize: THEME.fontSize.xs,
     marginBottom: 4,
   },
   dueDate: {
-    color: '#9A9A9A',
-    fontSize: 13,
+    color: THEME.colors.textSecondary,
+    fontSize: THEME.fontSize.sm,
   },
   overdueText: {
-    color: '#DC2626',
+    color: THEME.colors.error,
     fontWeight: '600',
   },
 });

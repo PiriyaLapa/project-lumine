@@ -22,6 +22,7 @@ export interface AutoTouchCardProps {
   products: AutoTouchCardProduct[];
   channels_available: { line: boolean; email: boolean };
   onPress: (taskId: number, customerId: string) => void;
+  onCustomerPress?: (customerId: string, customerName: string | null) => void;
 }
 
 const TASK_TYPE_LABELS: Record<string, string> = {
@@ -40,6 +41,7 @@ export default function AutoTouchCard({
   products,
   channels_available,
   onPress,
+  onCustomerPress,
 }: AutoTouchCardProps) {
   const isOverdue = new Date(due_date) < new Date();
   const hasNoChannel = !channels_available.line && !channels_available.email;
@@ -54,8 +56,14 @@ export default function AutoTouchCard({
         <Text style={styles.taskType}>{TASK_TYPE_LABELS[task_type]}</Text>
         <Text style={styles.days}>{days_since_purchase}d since purchase</Text>
       </View>
-      <Text style={styles.customerName}>{customer_name}</Text>
-      <Text style={styles.customerId}>Customer: {customer_id}</Text>
+      <TouchableOpacity
+        disabled={!onCustomerPress}
+        onPress={() => onCustomerPress?.(customer_id, customer_name)}
+        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+      >
+        <Text style={styles.customerName}>{customer_name}</Text>
+        <Text style={styles.customerId}>Customer: {customer_id}</Text>
+      </TouchableOpacity>
       {products.length > 0 && (
         <Text style={styles.products} numberOfLines={1}>
           {products.map((p) => p.product_clean).join(', ')}
