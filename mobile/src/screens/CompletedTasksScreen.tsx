@@ -78,7 +78,14 @@ export default function CompletedTasksScreen({ navigation }: Props) {
           <Text style={styles.doneBadgeText}>Done</Text>
         </View>
       </View>
-      <Text style={styles.meta}>Customer: {item.customer_id}</Text>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('CustomerProfile', { customer_id: item.customer_id, customer_name: null })
+        }
+        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+      >
+        <Text style={[styles.meta, styles.customerLink]}>Customer: {item.customer_id}</Text>
+      </TouchableOpacity>
       <Text style={styles.meta}>Due: {item.due_date}</Text>
       {item.staff_name ? (
         <Text style={styles.staffName}>Sold by: {item.staff_name}</Text>
@@ -164,5 +171,6 @@ const styles = StyleSheet.create({
   },
   doneBadgeText: { color: THEME.colors.card, fontSize: THEME.fontSize.xs, fontWeight: '700' },
   meta: { fontSize: THEME.fontSize.sm, color: THEME.colors.textSecondary, marginTop: 2 },
+  customerLink: { color: THEME.colors.primary, fontWeight: '600' },
   staffName: { fontSize: THEME.fontSize.sm, color: THEME.colors.soldBy, marginTop: 2 },
 });

@@ -1,9 +1,11 @@
 """
-Customers Router — POST /api/v1/customers/import-crm and
-POST /api/v1/customers/register.
+Customers Router — POST /api/v1/customers/import-crm,
+POST /api/v1/customers/register, and the Customer Profile read endpoints
+(GET .../{customer_id}, .../transactions, .../tasks).
 Field names locked to openapi.yaml.
 """
 import logging
+from datetime import date as date_type
 from io import BytesIO
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -18,6 +20,8 @@ from app.services.customer_register_service import (
     CustomerRegisterService,
     CustomerAlreadyExistsError,
 )
+from app.services import customer_profile_service
+from app.repositories import task_repo, transaction_repo
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +73,44 @@ class CustomerResponse(BaseModel):
     updated_at: str
 
     model_config = {"from_attributes": True}
+
+
+class CustomerProfileResponse(BaseModel):
+    """Customer Profile view — no phone/email/line_id (contact PII restricted)."""
+
+    customer_id: str  # LOCKED
+    name: str
+    do_not_contact: bool  # LOCKED
+    source: str
+    created_at: str
+    updated_at: str
+
+
+class CustomerTransactionResponse(BaseModel):
+    idoc_number: str
+    posting_date: date_type
+    material_desc: str | None = None
+    price: float | None = None
+    returned: bool
+    staff_name: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class CustomerTaskResponse(BaseModel):
+    """Mirrors FollowUpTaskResponse in routers/tasks.py — field names locked to openapi.yaml."""
+
+    id: int
+    customer_id: str  # LOCKED
+    task_type: str  # LOCKED: 2D | 2W | 2M
+    task_basis: str  # LOCKED: posting_date | manual_override
+    due_date: date_type  # LOCKED
+    calculated_from: date_type  # LOCKED
+    status: str  # LOCKED: Pending | Done | Superseded
+    staff_name: str | None = None
+    customer_name: str | None = None
+    created_at: str
+    updated_at: str
 
 
 # ---------------------------------------------------------------------------
@@ -132,3 +174,68 @@ def register_customer(
     db.commit()
     logger.info("customers.register: staff=%d customer_id=%s", current_staff.staff_id, customer.customer_id)
     return customer
+
+
+@router.get("/customers/{customer_id}", response_model=CustomerProfileResponse)
+def get_customer_profile(
+    customer_id: str,
+    db: Session = Depends(get_db),
+    current_staff: TokenPayload = Depends(get_current_staff),
+):
+    """
+    Customer Profile identity — name only, never phone/email/line_id.
+    Store-wide within the requester's store (see CLAUDE.md Auth Rules
+    exception). 404 if the customer has no transactions in this store,
+    to avoid leaking cross-store customer existence.
+    """
+    profile = customer_profile_service.get_profile(db, customer_id, current_staff.store_id)
+    if profile is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
+    return profile
+
+
+@router.get("/customers/{customer_id}/transactions", response_model=list[CustomerTransactionResponse])
+def get_customer_transactions(
+    customer_id: str,
+    db: Session = Depends(get_db),
+    current_staff: TokenPayload = Depends(get_current_staff),
+):
+    """Purchase history — store-wide within the requester's store."""
+    transactions = transaction_repo.get_by_customer_in_store(db, customer_id, current_staff.store_id)
+    return [
+        CustomerTransactionResponse(
+            idoc_number=t.idoc_number,
+            posting_date=t.posting_date,
+            material_desc=t.material_desc,
+            price=t.price,
+            returned=t.returned,
+            staff_name=t.sales_rep_name,
+        )
+        for t in transactions
+    ]
+
+
+@router.get("/customers/{customer_id}/tasks", response_model=list[CustomerTaskResponse])
+def get_customer_tasks(
+    customer_id: str,
+    db: Session = Depends(get_db),
+    current_staff: TokenPayload = Depends(get_current_staff),
+):
+    """Follow-up history (all statuses: Pending/Done/Superseded) — store-wide within the requester's store."""
+    rows = task_repo.get_all_by_customer_in_store(db, customer_id, current_staff.store_id)
+    return [
+        CustomerTaskResponse(
+            id=t.id,
+            customer_id=t.customer_id,
+            task_type=t.task_type,
+            task_basis=t.task_basis,
+            due_date=t.due_date,
+            calculated_from=t.calculated_from,
+            status=t.status,
+            staff_name=staff_name,
+            customer_name=customer_name,
+            created_at=str(t.created_at),
+            updated_at=str(t.updated_at),
+        )
+        for t, staff_name, customer_name in rows
+    ]
