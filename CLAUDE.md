@@ -63,10 +63,10 @@ Commits: feat: · fix: · test: · docs:
 Phases 1–7 complete. Deployed.
 
 - Backend: https://lumine-api-qi77.onrender.com (Render free + TiDB Cloud free)
-- Mobile: APK v1.1.0 — Upload History + conflict detection (emulator verified ✅)
+- Mobile: last built APK v1.1.0 — Upload History + conflict detection (emulator verified ✅). v1.4.0 emulator-verified 2026-07-28 (Customer Profile, nav drawer, evidence logging end-to-end); APK not yet built — pending EAS build.
 - Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
 
-311/311 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-27).
+326/326 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-28).
 
 ## APK Versioning
 Source of truth: mobile/app.json — version + versionCode.
@@ -78,6 +78,7 @@ Do not use any other source for APK version.
 | v1.1.0 | 2 | Upload History + duplicate date-range conflict detection |
 | v1.2.0 | 4 | Light theme, Sold by label, staff filter chips, force re-upload upsert |
 | v1.3.0 | 5 | employee_code on Register, Completed Tasks History, Editable Evidence |
+| v1.4.0 | 6 | Customer Profile (purchase + follow-up history), nav drawer replacing Dashboard header buttons |
 
 ## UI Theme Rules
 
