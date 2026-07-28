@@ -113,6 +113,49 @@ class TestLogin:
 
 
 # ---------------------------------------------------------------------------
+# Me endpoint — GET /api/v1/auth/me
+# ---------------------------------------------------------------------------
+
+def bearer(staff_id: int = 1, role: str = "sales_associate", store_id: int = 5) -> dict:
+    token = AuthService.create_access_token(
+        {"staff_id": staff_id, "role": role, "store_id": store_id}
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+class TestMeEndpoint:
+    def test_returns_name_email_role_for_authenticated_staff(self):
+        staff = make_staff(staff_id=1, role="sales_associate")
+        app.dependency_overrides[get_db] = override_db(staff)
+        client = TestClient(app)
+
+        resp = client.get("/api/v1/auth/me", headers=bearer(staff_id=1))
+        app.dependency_overrides.clear()
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["staff_id"] == 1
+        assert data["name"] == "Benz"
+        assert data["email"] == "benz@lumine.com"
+        assert data["role"] == "sales_associate"
+
+    def test_requires_jwt(self):
+        client = TestClient(app)
+        resp = client.get("/api/v1/auth/me")
+        assert resp.status_code == 403
+
+    def test_404_when_staff_not_found_or_soft_deleted(self):
+        """staff_repo.get_by_id already filters deleted_at — None means not-found or soft-deleted."""
+        app.dependency_overrides[get_db] = override_db(None)
+        client = TestClient(app)
+
+        resp = client.get("/api/v1/auth/me", headers=bearer(staff_id=999))
+        app.dependency_overrides.clear()
+
+        assert resp.status_code == 404
+
+
+# ---------------------------------------------------------------------------
 # Refresh endpoint
 # ---------------------------------------------------------------------------
 
