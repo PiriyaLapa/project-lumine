@@ -21,6 +21,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import FollowUpDashboardScreen from '../screens/FollowUpDashboardScreen';
 import AutoTouchScreen from '../screens/AutoTouchScreen';
 import AutoTouchDetailScreen from '../screens/AutoTouchDetailScreen';
+import CustomerProfileScreen from '../screens/CustomerProfileScreen';
 
 import { tokenStorage, authEvents } from '../api/client';
 
@@ -42,6 +43,7 @@ export type RootStackParamList = {
   FollowUpDashboard: undefined;
   AutoTouch: undefined;
   AutoTouchDetail: { taskId: number; customer_id: string };
+  CustomerProfile: { customer_id: string; customer_name: string | null };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -88,6 +90,7 @@ export default function AppNavigator() {
         <Stack.Screen name="FollowUpDashboard" component={FollowUpDashboardScreen} />
         <Stack.Screen name="AutoTouch" component={AutoTouchScreen} />
         <Stack.Screen name="AutoTouchDetail" component={AutoTouchDetailScreen} />
+        <Stack.Screen name="CustomerProfile" component={CustomerProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

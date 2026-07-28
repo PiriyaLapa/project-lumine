@@ -224,6 +224,9 @@ export default function DashboardScreen({ navigation }: Props) {
               status={item.status}
               staff_name={item.staff_name}
               onPress={(id) => navigation.navigate('TaskDetail', { taskId: id })}
+              onCustomerPress={(customerId, customerName) =>
+                navigation.navigate('CustomerProfile', { customer_id: customerId, customer_name: customerName })
+              }
             />
           )}
           ListEmptyComponent={

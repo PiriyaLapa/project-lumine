@@ -57,6 +57,30 @@ def get_tasks_for_store(db: Session, store_id: int) -> list[tuple]:
     )
 
 
+def get_all_by_customer_in_store(db: Session, customer_id: str, store_id: int) -> list[tuple]:
+    """
+    Return (FollowUpTask, sales_rep_name, customer_name) tuples for a customer,
+    all statuses (Pending/Done/Superseded), scoped to staff in the given store.
+    Store-wide within a store — see CLAUDE.md Auth Rules exception for the
+    GET /customers/{id}/* endpoints.
+    """
+    from app.models.transaction import Transaction
+    from app.models.staff import Staff
+
+    return (
+        db.query(FollowUpTask, Transaction.sales_rep_name, Transaction.customer_name)
+        .join(Transaction, FollowUpTask.idoc_number == Transaction.idoc_number)
+        .join(Staff, Transaction.staff_id == Staff.id)
+        .filter(
+            FollowUpTask.customer_id == customer_id,
+            Staff.store_id == store_id,
+            Staff.deleted_at.is_(None),
+        )
+        .order_by(FollowUpTask.due_date.desc())
+        .all()
+    )
+
+
 def get_by_id(db: Session, task_id: int) -> FollowUpTask | None:
     return db.query(FollowUpTask).filter(FollowUpTask.id == task_id).first()
 
