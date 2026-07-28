@@ -1,0 +1,16 @@
+# E2E — open a task, log evidence (notes only, no photo), confirm saved.
+# Requires a Pending task to exist for the logged-in account (dev-stack QA
+# data already has some — see backend QA-CUST-* fixtures).
+appId: host.exp.exponent
+---
+- runFlow: login.yaml
+- tapOn:
+    point: "50%,20%" # first task card in the list
+- assertVisible: "Log Evidence"
+- tapOn: "Log Evidence"
+- assertVisible: "Log Evidence" # EvidenceScreen title
+- tapOn: "Describe the follow-up interaction"
+- inputText: "Maestro E2E: called customer, confirmed happy with purchase."
+- tapOn: "Save Evidence"
+- assertVisible: "Saved"
+- tapOn: "OK"
