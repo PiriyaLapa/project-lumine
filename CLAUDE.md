@@ -63,7 +63,7 @@ Commits: feat: · fix: · test: · docs:
 Phases 1–7 complete. Deployed.
 
 - Backend: https://lumine-api-qi77.onrender.com (Render free + TiDB Cloud free)
-- Mobile: last built APK v1.1.0 — Upload History + conflict detection (emulator verified ✅). v1.4.0 emulator-verified 2026-07-28 (Customer Profile, nav drawer, evidence logging end-to-end); APK not yet built — pending EAS build. 2026-07-29: Benz reported empty Dashboard after installing v1.4.0 — investigated, frontend JWT-race theory ruled out via code review, root cause unconfirmed. Diagnostic logging shipped instead (PR #30 → GH #29, merged to develop) to capture evidence if it recurs; monitoring, not blocking.
+- Mobile: last built APK v1.1.0 — Upload History + conflict detection (emulator verified ✅). v1.4.0 emulator-verified 2026-07-28 (Customer Profile, nav drawer, evidence logging end-to-end). 2026-07-29: Benz reported empty Dashboard after installing v1.4.0 — investigated, frontend JWT-race theory ruled out via code review, root cause unconfirmed. Diagnostic logging shipped instead (PR #30 → GH #29, merged to develop) to capture evidence if it recurs; monitoring, not blocking. Separately, "Could not load your tasks" reproduced in production — root-caused to a real concurrent-fetch race (useFocusEffect + pull-to-refresh both calling fetchTasks with no in-flight guard); fixed in PR #32, merged to develop. v1.5.0 (versionCode 7) EAS build in progress to ship both this fix and GH #27's mobile change (neither was in the v1.4.0/6 APK).
 - Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
 
 331/331 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-29). GH #27 fixed: self-registration now always creates sales_associate, ignoring client-submitted role; mobile Register screen's role picker removed to match. Installed APK (v1.4.0/6) predates this fix — not yet in a built APK.
@@ -79,6 +79,7 @@ Do not use any other source for APK version.
 | v1.2.0 | 4 | Light theme, Sold by label, staff filter chips, force re-upload upsert |
 | v1.3.0 | 5 | employee_code on Register, Completed Tasks History, Editable Evidence |
 | v1.4.0 | 6 | Customer Profile (purchase + follow-up history), nav drawer replacing Dashboard header buttons |
+| v1.5.0 | 7 | GH #27 fix: self-registration forced to sales_associate (role picker removed from Register screen); GH #29-adjacent fix: Dashboard concurrent-fetch race-condition guard (useFocusEffect + pull-to-refresh could double-fire GET /api/v1/tasks) |
 
 ## UI Theme Rules
 
