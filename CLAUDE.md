@@ -63,10 +63,10 @@ Commits: feat: · fix: · test: · docs:
 Phases 1–7 complete. Deployed.
 
 - Backend: https://lumine-api-qi77.onrender.com (Render free + TiDB Cloud free)
-- Mobile: last built APK v1.1.0 — Upload History + conflict detection (emulator verified ✅). v1.4.0 emulator-verified 2026-07-28 (Customer Profile, nav drawer, evidence logging end-to-end); APK not yet built — pending EAS build.
+- Mobile: last built APK v1.1.0 — Upload History + conflict detection (emulator verified ✅). v1.4.0 emulator-verified 2026-07-28 (Customer Profile, nav drawer, evidence logging end-to-end); APK not yet built — pending EAS build. 2026-07-29: Benz reported empty Dashboard after installing v1.4.0 — investigated, frontend JWT-race theory ruled out via code review, root cause unconfirmed. Diagnostic logging shipped instead (PR #30 → GH #29, merged to develop) to capture evidence if it recurs; monitoring, not blocking.
 - Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
 
-326/326 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-28).
+329/329 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-29).
 
 ## APK Versioning
 Source of truth: mobile/app.json — version + versionCode.
