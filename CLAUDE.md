@@ -111,7 +111,7 @@ Mobile: React Native + TypeScript
 Auth: JWT via python-jose, bcrypt for passwords
 SAP parsing: pandas
 Image processing: Pillow (compress before upload)
-Tests: pytest + pytest-cov
+Tests: pytest + pytest-cov — run via `backend/venv/bin/pytest` (or `.venv/bin/pytest`), never bare `pytest`: it resolves to system Python 3.12, which is missing `pandas` and other deps. Two venvs exist (`venv/`, `.venv/`, both pytest 8.2.0) — either works, neither is canonical.
 Linting: Black + ESLint
 Storage: Google Drive API v3
 API versioning: /api/v1/ prefix always
