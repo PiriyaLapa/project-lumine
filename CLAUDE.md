@@ -66,7 +66,7 @@ Phases 1–7 complete. Deployed.
 - Mobile: last built APK v1.1.0 — Upload History + conflict detection (emulator verified ✅). v1.4.0 emulator-verified 2026-07-28 (Customer Profile, nav drawer, evidence logging end-to-end); APK not yet built — pending EAS build. 2026-07-29: Benz reported empty Dashboard after installing v1.4.0 — investigated, frontend JWT-race theory ruled out via code review, root cause unconfirmed. Diagnostic logging shipped instead (PR #30 → GH #29, merged to develop) to capture evidence if it recurs; monitoring, not blocking.
 - Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
 
-329/329 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-29).
+331/331 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-29). GH #27 fixed: self-registration now always creates sales_associate, ignoring client-submitted role; mobile Register screen's role picker removed to match. Installed APK (v1.4.0/6) predates this fix — not yet in a built APK.
 
 ## APK Versioning
 Source of truth: mobile/app.json — version + versionCode.

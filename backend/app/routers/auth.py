@@ -142,7 +142,6 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
     """
     Self-register a new staff account.
-    # TODO: Restrict role selection in production — any visitor can currently register as store_manager.
     Returns access + refresh token pair for immediate session creation.
     """
     existing = staff_repo.get_by_email(db, body.email)
@@ -163,12 +162,15 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
 
     hashed = AuthService.hash_password(body.password)
 
+    # GH #27: body.role is never trusted here — self-registration always
+    # creates sales_associate. store_manager accounts are granted separately
+    # (direct DB update), not through this public, unauthenticated endpoint.
     new_staff = staff_repo.create_staff(
         db,
         name=body.full_name,
         email=body.email,
         hashed_password=hashed,
-        role=body.role,
+        role="sales_associate",
         store_id=body.store_id,
         employee_code=body.employee_code,
     )
