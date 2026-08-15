@@ -58,8 +58,7 @@ export default function DashboardScreen({ navigation }: Props) {
   // Law 1 — Pull on Focus: always fetch fresh data when screen comes to foreground
   useFocusEffect(
     useCallback(() => {
-      fetchTasks();
-      fetchAutoTouchStatus();
+      fetchTasks().then(() => fetchAutoTouchStatus());
     }, [])
   );
 
