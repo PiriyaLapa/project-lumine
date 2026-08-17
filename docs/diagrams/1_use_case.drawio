@@ -1,0 +1,40 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Use Case - Lumine" id="uc1">
+    <mxGraphModel dx="900" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="boundary" value="Lumine System" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="180" y="40" width="360" height="440" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor" value="Sales Associate" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc1" value="Import SAP customer data" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="220" y="80" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc2" value="View follow-up queue" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="220" y="170" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc3" value="Receive 2-2-2 reminders" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="220" y="260" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc4" value="Log follow-up completion" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="220" y="350" width="280" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor" target="uc1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor" target="uc2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor" target="uc3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor" target="uc4"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="note" value="Manager/Admin actors deliberately parked as &quot;future actor if this scales&quot; — not built. MVP scope cut, confirmed against routers/ (auth, upload, tasks, evidence only)." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="180" y="500" width="360" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

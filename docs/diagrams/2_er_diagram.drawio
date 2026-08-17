@@ -1,0 +1,63 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="ER Diagram - Lumine" id="er1">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="STORE" value="&lt;b&gt;STORE&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;name" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="STAFF" value="&lt;b&gt;STAFF&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;employee_code&amp;nbsp;UK&lt;br&gt;name&lt;br&gt;role&amp;nbsp;(sales_associate|store_manager)&lt;br&gt;store_id&amp;nbsp;FK&lt;br&gt;email&amp;nbsp;UK&lt;br&gt;hashed_password&lt;br&gt;deleted_at&amp;nbsp;(soft-delete, PDPA)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="240" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="CUSTOMER" value="&lt;b&gt;CUSTOMER&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;customer_id&amp;nbsp;PK&lt;br&gt;name&lt;br&gt;phone&amp;nbsp;(PII)&lt;br&gt;email&amp;nbsp;(PII)&lt;br&gt;line_id&lt;br&gt;language&lt;br&gt;do_not_contact&lt;br&gt;source&amp;nbsp;(crm_import|manual|sap_only)&lt;br&gt;staff_id&amp;nbsp;FK&amp;nbsp;(nullable)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="40" width="260" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="MESSAGE" value="&lt;b&gt;MESSAGE&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;customer_id&amp;nbsp;FK&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;task_id&amp;nbsp;FK&amp;nbsp;(nullable)&lt;br&gt;touchpoint_type&amp;nbsp;(2D|2W|2M)&lt;br&gt;message_text&lt;br&gt;channel_line&amp;nbsp;/&amp;nbsp;channel_email&lt;br&gt;status_line&amp;nbsp;/&amp;nbsp;status_email&lt;br&gt;sent_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="40" width="260" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="UPLOAD_LOG" value="&lt;b&gt;UPLOAD_LOG&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;store_id&amp;nbsp;FK&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;filename&lt;br&gt;uploaded_at&lt;br&gt;row_count&lt;br&gt;tasks_created&lt;br&gt;date_range_start&amp;nbsp;/&amp;nbsp;end&lt;br&gt;status&amp;nbsp;(success|error)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="340" width="220" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="TRANSACTION" value="&lt;b&gt;TRANSACTION&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;idoc_number&amp;nbsp;PK&lt;br&gt;posting_date&lt;br&gt;ean&lt;br&gt;material_desc&lt;br&gt;customer_id&amp;nbsp;(SAP&amp;nbsp;code&amp;nbsp;-&amp;nbsp;NOT&amp;nbsp;enforced&amp;nbsp;FK)&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;sales_rep_name&lt;br&gt;customer_name&amp;nbsp;(nullable, migration 0010)&lt;br&gt;price&amp;nbsp;(nullable, migration 0009)&lt;br&gt;returned" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="340" width="260" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="FOLLOW_UP_TASK" value="&lt;b&gt;FOLLOW_UP_TASK&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;customer_id&lt;br&gt;idoc_number&amp;nbsp;FK&lt;br&gt;task_type&amp;nbsp;(2D|2W|2M)&lt;br&gt;task_basis&lt;br&gt;due_date&lt;br&gt;calculated_from&lt;br&gt;status&amp;nbsp;(Pending|Done|Superseded)&lt;br&gt;skipped_until&amp;nbsp;(Auto-Touch)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="340" width="260" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="EVIDENCE_LOG" value="&lt;b&gt;EVIDENCE_LOG&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;task_id&amp;nbsp;FK&lt;br&gt;notes&lt;br&gt;image_uri&amp;nbsp;(nullable&amp;nbsp;if&amp;nbsp;Drive&amp;nbsp;upload&amp;nbsp;failed)&lt;br&gt;image_size_kb&lt;br&gt;timestamp&lt;br&gt;staff_id&amp;nbsp;FK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="340" width="240" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+        <mxCell id="r1" value="1 employs N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STORE" target="STAFF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r2" value="1 scoped-to N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STORE" target="UPLOAD_LOG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r3" value="1 records N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STAFF" target="TRANSACTION"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r4" value="1 uploads N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STAFF" target="UPLOAD_LOG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r5" value="1 logs N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STAFF" target="EVIDENCE_LOG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r6" value="0..1 optionally registers N" style="html=1;endArrow=none;dashed=1;fontSize=10;" edge="1" parent="1" source="STAFF" target="CUSTOMER"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r7" value="1 generates N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="TRANSACTION" target="FOLLOW_UP_TASK"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r8" value="1 closed-by 0..N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="FOLLOW_UP_TASK" target="EVIDENCE_LOG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r9" value="0..1 triggers N" style="html=1;endArrow=none;dashed=1;fontSize=10;" edge="1" parent="1" source="FOLLOW_UP_TASK" target="MESSAGE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r10" value="1 receives N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="CUSTOMER" target="MESSAGE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r11" value="customer_id — SAP code, NOT an enforced FK (registration optional; talking point: requirement decision, not a bug)" style="html=1;endArrow=none;dashed=1;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" parent="1" source="TRANSACTION" target="CUSTOMER">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="600" y="260" /><mxPoint x="810" y="260" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="note" value="Verified 2026-08-17 against backend/app/models/*.py — field names, nullability, and FK choices are the real current schema (includes Store, Message, UploadLog, which earlier drafts omitted)." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="570" width="700" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
