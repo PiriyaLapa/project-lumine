@@ -1,0 +1,285 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Use Case - Lumine" id="uc1">
+    <mxGraphModel dx="900" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="boundary" value="Lumine System" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="180" y="40" width="360" height="440" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor" value="Sales Associate" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc1" value="Import SAP customer data" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="220" y="80" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc2" value="View follow-up queue" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="220" y="170" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc3" value="Receive 2-2-2 reminders" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="220" y="260" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc4" value="Log follow-up completion" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="220" y="350" width="280" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor" target="uc1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor" target="uc2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor" target="uc3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor" target="uc4"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="note" value="Manager/Admin actors deliberately parked as &quot;future actor if this scales&quot; — not built. MVP scope cut, confirmed against routers/ (auth, upload, tasks, evidence only)." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="180" y="500" width="360" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="ER Diagram - Lumine" id="er1">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="STORE" value="&lt;b&gt;STORE&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;name" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="STAFF" value="&lt;b&gt;STAFF&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;employee_code&amp;nbsp;UK&lt;br&gt;name&lt;br&gt;role&amp;nbsp;(sales_associate|store_manager)&lt;br&gt;store_id&amp;nbsp;FK&lt;br&gt;email&amp;nbsp;UK&lt;br&gt;hashed_password&lt;br&gt;deleted_at&amp;nbsp;(soft-delete, PDPA)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="240" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="CUSTOMER" value="&lt;b&gt;CUSTOMER&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;customer_id&amp;nbsp;PK&lt;br&gt;name&lt;br&gt;phone&amp;nbsp;(PII)&lt;br&gt;email&amp;nbsp;(PII)&lt;br&gt;line_id&lt;br&gt;language&lt;br&gt;do_not_contact&lt;br&gt;source&amp;nbsp;(crm_import|manual|sap_only)&lt;br&gt;staff_id&amp;nbsp;FK&amp;nbsp;(nullable)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="40" width="260" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="MESSAGE" value="&lt;b&gt;MESSAGE&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;customer_id&amp;nbsp;FK&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;task_id&amp;nbsp;FK&amp;nbsp;(nullable)&lt;br&gt;touchpoint_type&amp;nbsp;(2D|2W|2M)&lt;br&gt;message_text&lt;br&gt;channel_line&amp;nbsp;/&amp;nbsp;channel_email&lt;br&gt;status_line&amp;nbsp;/&amp;nbsp;status_email&lt;br&gt;sent_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="40" width="260" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="UPLOAD_LOG" value="&lt;b&gt;UPLOAD_LOG&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;store_id&amp;nbsp;FK&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;filename&lt;br&gt;uploaded_at&lt;br&gt;row_count&lt;br&gt;tasks_created&lt;br&gt;date_range_start&amp;nbsp;/&amp;nbsp;end&lt;br&gt;status&amp;nbsp;(success|error)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="340" width="220" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="TRANSACTION" value="&lt;b&gt;TRANSACTION&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;idoc_number&amp;nbsp;PK&lt;br&gt;posting_date&lt;br&gt;ean&lt;br&gt;material_desc&lt;br&gt;customer_id&amp;nbsp;(SAP&amp;nbsp;code&amp;nbsp;-&amp;nbsp;NOT&amp;nbsp;enforced&amp;nbsp;FK)&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;sales_rep_name&lt;br&gt;customer_name&amp;nbsp;(nullable, migration 0010)&lt;br&gt;price&amp;nbsp;(nullable, migration 0009)&lt;br&gt;returned" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="340" width="260" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="FOLLOW_UP_TASK" value="&lt;b&gt;FOLLOW_UP_TASK&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;customer_id&lt;br&gt;idoc_number&amp;nbsp;FK&lt;br&gt;task_type&amp;nbsp;(2D|2W|2M)&lt;br&gt;task_basis&lt;br&gt;due_date&lt;br&gt;calculated_from&lt;br&gt;status&amp;nbsp;(Pending|Done|Superseded)&lt;br&gt;skipped_until&amp;nbsp;(Auto-Touch)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="340" width="260" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="EVIDENCE_LOG" value="&lt;b&gt;EVIDENCE_LOG&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;task_id&amp;nbsp;FK&lt;br&gt;notes&lt;br&gt;image_uri&amp;nbsp;(nullable&amp;nbsp;if&amp;nbsp;Drive&amp;nbsp;upload&amp;nbsp;failed)&lt;br&gt;image_size_kb&lt;br&gt;timestamp&lt;br&gt;staff_id&amp;nbsp;FK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="340" width="240" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+        <mxCell id="r1" value="1 employs N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STORE" target="STAFF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r2" value="1 scoped-to N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STORE" target="UPLOAD_LOG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r3" value="1 records N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STAFF" target="TRANSACTION"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r4" value="1 uploads N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STAFF" target="UPLOAD_LOG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r5" value="1 logs N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="STAFF" target="EVIDENCE_LOG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r6" value="0..1 optionally registers N" style="html=1;endArrow=none;dashed=1;fontSize=10;" edge="1" parent="1" source="STAFF" target="CUSTOMER"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r7" value="1 generates N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="TRANSACTION" target="FOLLOW_UP_TASK"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r8" value="1 closed-by 0..N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="FOLLOW_UP_TASK" target="EVIDENCE_LOG"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r9" value="0..1 triggers N" style="html=1;endArrow=none;dashed=1;fontSize=10;" edge="1" parent="1" source="FOLLOW_UP_TASK" target="MESSAGE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r10" value="1 receives N" style="html=1;endArrow=none;fontSize=10;" edge="1" parent="1" source="CUSTOMER" target="MESSAGE"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r11" value="customer_id — SAP code, NOT an enforced FK (registration optional; talking point: requirement decision, not a bug)" style="html=1;endArrow=none;dashed=1;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" parent="1" source="TRANSACTION" target="CUSTOMER">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="600" y="260" /><mxPoint x="810" y="260" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="note" value="Verified 2026-08-17 against backend/app/models/*.py — field names, nullability, and FK choices are the real current schema (includes Store, Message, UploadLog, which earlier drafts omitted)." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="570" width="700" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Sequence - Lumine" id="seq1">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Participants -->
+        <mxCell id="pSA" value="Sales Associate" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1"><mxGeometry x="20" y="20" width="30" height="60" as="geometry" /></mxCell>
+        <mxCell id="pApp" value="Mobile App (Expo)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="150" y="30" width="150" height="40" as="geometry" /></mxCell>
+        <mxCell id="pAPI" value="FastAPI Router&#10;(upload / tasks / evidence)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="360" y="30" width="150" height="40" as="geometry" /></mxCell>
+        <mxCell id="pParser" value="SAPParser" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="570" y="30" width="140" height="40" as="geometry" /></mxCell>
+        <mxCell id="pReset" value="CycleReset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="770" y="30" width="140" height="40" as="geometry" /></mxCell>
+        <mxCell id="pSched" value="TaskScheduler" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="970" y="30" width="140" height="40" as="geometry" /></mxCell>
+        <mxCell id="pDB" value="MySQL / TiDB" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="1170" y="30" width="140" height="40" as="geometry" /></mxCell>
+
+        <!-- Lifelines -->
+        <mxCell id="l1" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="35" y="80" as="sourcePoint" /><mxPoint x="35" y="880" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l2" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="225" y="70" as="sourcePoint" /><mxPoint x="225" y="880" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l3" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="435" y="70" as="sourcePoint" /><mxPoint x="435" y="880" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l4" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="640" y="70" as="sourcePoint" /><mxPoint x="640" y="500" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l5" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="840" y="70" as="sourcePoint" /><mxPoint x="840" y="500" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l6" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1040" y="70" as="sourcePoint" /><mxPoint x="1040" y="500" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l7" style="html=1;endArrow=none;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1240" y="70" as="sourcePoint" /><mxPoint x="1240" y="880" as="targetPoint" /></mxGeometry></mxCell>
+
+        <!-- Upload phase messages -->
+        <mxCell id="m1" value="1. Select SAP export file" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="35" y="110" as="sourcePoint" /><mxPoint x="225" y="110" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m2" value="2. POST /upload?force=false (JWT Bearer)" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="225" y="150" as="sourcePoint" /><mxPoint x="435" y="150" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m3" value="3. parse(file) via sap_column_map.json (Rule 7)" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="435" y="190" as="sourcePoint" /><mxPoint x="640" y="190" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m4" value="4. parsed transaction rows" style="html=1;dashed=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="640" y="225" as="sourcePoint" /><mxPoint x="435" y="225" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m5" value="5. check date-range overlap (skip if force=true)" style="html=1;fontSize=11;fontColor=#b85450;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="435" y="260" as="sourcePoint" /><mxPoint x="500" y="260" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m6" value="6. INSERT transactions" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="435" y="295" as="sourcePoint" /><mxPoint x="1240" y="295" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m7" value="7. CycleReset(transaction)" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="435" y="330" as="sourcePoint" /><mxPoint x="840" y="330" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m8" value="8. schedule(db, transaction)" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="840" y="365" as="sourcePoint" /><mxPoint x="1040" y="365" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m9" value="9. INSERT 3x FollowUpTask (2D=+2d / 2W=+14d / 2M=+60d, from posting_date)" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1040" y="400" as="sourcePoint" /><mxPoint x="1240" y="400" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m10" value="10. UploadResponse (tasks_created, cycles_reset)" style="html=1;dashed=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="435" y="435" as="sourcePoint" /><mxPoint x="225" y="435" as="targetPoint" /></mxGeometry></mxCell>
+
+        <mxCell id="divider" value="Later — associate closes a task" style="text;html=1;align=center;fontStyle=2;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="35" y="470" width="1205" height="30" as="geometry" /></mxCell>
+
+        <!-- Evidence close phase -->
+        <mxCell id="m11" value="11. Open Dashboard, tap task" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="35" y="530" as="sourcePoint" /><mxPoint x="225" y="530" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m12" value="12. GET /tasks (JWT)" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="225" y="570" as="sourcePoint" /><mxPoint x="435" y="570" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m13" value="13. tasks scoped to staff_id from JWT only (never request body)" style="html=1;dashed=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="435" y="610" as="sourcePoint" /><mxPoint x="225" y="610" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m14" value="14. Submit evidence (photo + notes)" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="35" y="650" as="sourcePoint" /><mxPoint x="225" y="650" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m15" value="15. POST /evidence" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="225" y="690" as="sourcePoint" /><mxPoint x="435" y="690" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m16" value="16. INSERT evidence_log; UPDATE task.status = Done" style="html=1;fontSize=11;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="435" y="730" as="sourcePoint" /><mxPoint x="1240" y="730" as="targetPoint" /></mxGeometry></mxCell>
+
+        <mxCell id="note" value="Endpoint paths, force=false query param, JWT-scoped GET /tasks, and 2D/2W/2M offsets (2/14/60 days) verified 2026-08-17 against routers/upload.py, routers/tasks.py, routers/evidence.py, services/task_scheduler.py." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="35" y="800" width="900" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Architecture - Lumine" id="arch1">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="extBox" value="External Sources" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;verticalAlign=top;fontStyle=1;dashed=1;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="220" height="140" as="geometry" /></mxCell>
+        <mxCell id="sap" value="SAP Export&#10;(.xlsx / .csv)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="70" y="80" width="160" height="70" as="geometry" /></mxCell>
+
+        <mxCell id="clientBox" value="Mobile Client" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;verticalAlign=top;fontStyle=1;dashed=1;" vertex="1" parent="1"><mxGeometry x="40" y="260" width="220" height="140" as="geometry" /></mxCell>
+        <mxCell id="rn" value="React Native (Expo)&#10;TypeScript" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="70" y="300" width="160" height="70" as="geometry" /></mxCell>
+
+        <mxCell id="backendBox" value="FastAPI Backend (Render)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;verticalAlign=top;fontStyle=1;dashed=1;" vertex="1" parent="1"><mxGeometry x="380" y="40" width="260" height="440" as="geometry" /></mxCell>
+        <mxCell id="routers" value="Routers&#10;auth, upload, tasks, evidence,&#10;customers, auto_touch, reports" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="410" y="80" width="200" height="70" as="geometry" /></mxCell>
+        <mxCell id="jwt" value="JWT Middleware&#10;(python-jose)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="410" y="180" width="200" height="60" as="geometry" /></mxCell>
+        <mxCell id="services" value="Services&#10;sap_parser, task_scheduler,&#10;cycle_reset, evidence_service,&#10;message_generator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="410" y="270" width="200" height="80" as="geometry" /></mxCell>
+        <mxCell id="repos" value="Repositories&#10;SQLAlchemy ORM&#10;(no raw SQL — repo pattern)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="410" y="380" width="200" height="70" as="geometry" /></mxCell>
+
+        <mxCell id="db" value="MySQL / TiDB Cloud" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="720" y="390" width="160" height="80" as="geometry" /></mxCell>
+
+        <mxCell id="drive" value="Google Drive API v3&#10;(evidence photo storage)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="720" y="80" width="200" height="70" as="geometry" /></mxCell>
+
+        <mxCell id="notifBox" value="Notification Channels" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;verticalAlign=top;fontStyle=1;dashed=1;" vertex="1" parent="1"><mxGeometry x="700" y="200" width="240" height="150" as="geometry" /></mxCell>
+        <mxCell id="line" value="LINE Messaging API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="720" y="230" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="smtp" value="SMTP (Email)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="720" y="290" width="200" height="50" as="geometry" /></mxCell>
+
+        <mxCell id="e1" value="manual upload" style="html=1;fontSize=11;" edge="1" parent="1" source="sap" target="rn"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" value="HTTPS + JWT" style="html=1;fontSize=11;" edge="1" parent="1" source="rn" target="routers"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="html=1;" edge="1" parent="1" source="routers" target="jwt"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="html=1;" edge="1" parent="1" source="jwt" target="services"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="html=1;" edge="1" parent="1" source="services" target="repos"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" style="html=1;" edge="1" parent="1" source="repos" target="db"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" value="evidence photo" style="html=1;fontSize=11;" edge="1" parent="1" source="services" target="drive"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" value="2-2-2 reminders" style="html=1;fontSize=11;" edge="1" parent="1" source="services" target="line"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" value="2-2-2 reminders" style="html=1;fontSize=11;" edge="1" parent="1" source="services" target="smtp"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="note" value="repositories/ layer, and LINE/SMTP notification channels, verified 2026-08-17 (backend/app/repositories/, services/line_client.py, services/smtp_client.py) — real, not in the earlier draft. CLAUDE.md Rule 7 (SAP never touches MySQL directly) and Repository Pattern (Services -> Repositories -> MySQL, never skip a layer) are enforced project rules, not just diagram theory." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="600" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="DFD Level 1 - Lumine" id="dfd1">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="SAP" value="SAP System" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="160" height="60" as="geometry" /></mxCell>
+        <mxCell id="SA" value="Sales Associate" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="40" y="360" width="160" height="60" as="geometry" /></mxCell>
+        <mxCell id="Drive" value="Google Drive" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1080" y="200" width="160" height="60" as="geometry" /></mxCell>
+
+        <mxCell id="P1" value="1.0&#10;Import SAP Data" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="300" y="40" width="160" height="80" as="geometry" /></mxCell>
+        <mxCell id="P2" value="2.0&#10;Schedule Follow-ups" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="560" y="40" width="160" height="80" as="geometry" /></mxCell>
+        <mxCell id="P3" value="3.0&#10;Complete Follow-up" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="560" y="340" width="160" height="80" as="geometry" /></mxCell>
+        <mxCell id="P4" value="4.0&#10;View Customer Profile" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="300" y="500" width="160" height="80" as="geometry" /></mxCell>
+
+        <mxCell id="D1" value="D1  Transactions" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;bottom=1;right=0;left=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="300" y="180" width="180" height="40" as="geometry" /></mxCell>
+        <mxCell id="D2" value="D2  FollowUpTasks" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;bottom=1;right=0;left=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="560" y="180" width="180" height="40" as="geometry" /></mxCell>
+        <mxCell id="D3" value="D3  EvidenceLogs" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;bottom=1;right=0;left=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="820" y="340" width="180" height="40" as="geometry" /></mxCell>
+        <mxCell id="D4" value="D4  Customers" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;bottom=1;right=0;left=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="60" y="500" width="180" height="40" as="geometry" /></mxCell>
+
+        <mxCell id="f1" value="SAP export file" style="html=1;fontSize=11;" edge="1" parent="1" source="SAP" target="P1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f2" value="transaction rows" style="html=1;fontSize=11;" edge="1" parent="1" source="P1" target="D1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f3" value="posting_date" style="html=1;fontSize=11;" edge="1" parent="1" source="D1" target="P2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f4" value="2D/2W/2M tasks" style="html=1;fontSize=11;" edge="1" parent="1" source="P2" target="D2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f5" value="due tasks" style="html=1;fontSize=11;" edge="1" parent="1" source="D2" target="P3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f6" value="photo + notes" style="html=1;fontSize=11;" edge="1" parent="1" source="SA" target="P3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f7" value="evidence record" style="html=1;fontSize=11;" edge="1" parent="1" source="P3" target="D3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f8" value="photo upload" style="html=1;fontSize=11;" edge="1" parent="1" source="P3" target="Drive"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f9" value="task status = Done" style="html=1;fontSize=11;" edge="1" parent="1" source="P3" target="D2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f10" value="lookup request" style="html=1;fontSize=11;" edge="1" parent="1" source="SA" target="P4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f11" style="html=1;" edge="1" parent="1" source="D1" target="P4"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="380" y="440" /></Array></mxGeometry></mxCell>
+        <mxCell id="f12" style="html=1;" edge="1" parent="1" source="D2" target="P4"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="650" y="440" /><mxPoint x="440" y="440" /></Array></mxGeometry></mxCell>
+        <mxCell id="f13" style="html=1;" edge="1" parent="1" source="D4" target="P4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f14" value="purchase + follow-up history" style="html=1;fontSize=11;" edge="1" parent="1" source="P4" target="SA"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="200" y="540" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="note" value="Level 0 collapses P1-P4 into one &quot;Lumine System&quot; process with the same 3 external entities (SAP, Sales Associate, Google Drive) — open with that, drill into this Level 1 only if asked. Processes verified against routers/upload.py (P1), services/task_scheduler.py (P2), routers/evidence.py (P3), routers/customers.py (P4)." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="300" y="620" width="700" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="BPMN - Lumine 2-2-2 Lifecycle" id="bpmn1">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="lane1" value="Sales Associate" style="swimlane;html=1;startSize=30;horizontal=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="1200" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="Upload SAP export" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="lane1"><mxGeometry x="40" y="60" width="100" height="60" as="geometry" /></mxCell>
+        <mxCell id="act1" value="Select file" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane1"><mxGeometry x="180" y="60" width="140" height="60" as="geometry" /></mxCell>
+        <mxCell id="actFix" value="Resolve conflict&#10;or force upsert" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane1"><mxGeometry x="380" y="10" width="140" height="60" as="geometry" /></mxCell>
+        <mxCell id="actView" value="View due&#10;follow-up task" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane1"><mxGeometry x="820" y="60" width="140" height="60" as="geometry" /></mxCell>
+        <mxCell id="actDo" value="Contact customer,&#10;log evidence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane1"><mxGeometry x="1000" y="60" width="140" height="60" as="geometry" /></mxCell>
+
+        <mxCell id="lane2" value="System (FastAPI)" style="swimlane;html=1;startSize=30;horizontal=0;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="1200" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="parse" value="Parse via&#10;sap_parser.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane2"><mxGeometry x="180" y="20" width="140" height="60" as="geometry" /></mxCell>
+        <mxCell id="gate" value="Date-range&#10;overlap?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="lane2"><mxGeometry x="380" y="100" width="120" height="80" as="geometry" /></mxCell>
+        <mxCell id="insert" value="Insert Transaction" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane2"><mxGeometry x="560" y="20" width="140" height="60" as="geometry" /></mxCell>
+        <mxCell id="sched" value="Create 2D / 2W / 2M&#10;FollowUpTasks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane2"><mxGeometry x="740" y="20" width="140" height="60" as="geometry" /></mxCell>
+        <mxCell id="due" value="Task due&#10;today?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="lane2"><mxGeometry x="820" y="100" width="120" height="80" as="geometry" /></mxCell>
+        <mxCell id="wait" value="Stay Pending" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane2"><mxGeometry x="1000" y="100" width="140" height="60" as="geometry" /></mxCell>
+        <mxCell id="close" value="Mark task Done,&#10;save EvidenceLog" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane2"><mxGeometry x="1000" y="20" width="140" height="60" as="geometry" /></mxCell>
+
+        <mxCell id="endA" value="Cycle closed" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1200" y="105" width="80" height="60" as="geometry" /></mxCell>
+
+        <mxCell id="c1" style="html=1;" edge="1" parent="1" source="start" target="act1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c2" style="html=1;" edge="1" parent="1" source="act1" target="parse"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c3" style="html=1;" edge="1" parent="1" source="parse" target="gate"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c4" value="yes, force=false" style="html=1;fontSize=11;" edge="1" parent="1" source="gate" target="actFix"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c5" style="html=1;" edge="1" parent="1" source="actFix" target="parse"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c6" value="no" style="html=1;fontSize=11;" edge="1" parent="1" source="gate" target="insert"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c7" style="html=1;" edge="1" parent="1" source="insert" target="sched"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c8" style="html=1;" edge="1" parent="1" source="sched" target="due"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c9" value="no" style="html=1;fontSize=11;" edge="1" parent="1" source="due" target="wait"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c10" style="html=1;" edge="1" parent="1" source="wait" target="due"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1140" y="360" /><mxPoint x="940" y="360" /></Array></mxGeometry></mxCell>
+        <mxCell id="c11" value="yes" style="html=1;fontSize=11;" edge="1" parent="1" source="due" target="actView"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c12" style="html=1;" edge="1" parent="1" source="actView" target="actDo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c13" style="html=1;" edge="1" parent="1" source="actDo" target="close"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c14" style="html=1;" edge="1" parent="1" source="close" target="endA"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="note" value="Verified 2026-08-17 against routers/upload.py: force=false (default) rejects on overlap and returns a 409-style conflict payload; force=true bypasses the check and upserts. The loop only closes when evidence is logged, not when the due date passes — status stays Pending until a human acts. Shape convention: rounded = start/end event, rectangle = task, diamond = gateway — standard BPMN notation." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="480" width="900" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
