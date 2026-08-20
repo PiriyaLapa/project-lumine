@@ -16,7 +16,7 @@
         <mxCell id="uc2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="View follow-up queue" vertex="1">
           <mxGeometry height="60" width="280" x="220" y="170" as="geometry" />
         </mxCell>
-        <mxCell id="uc3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Receive 2-2-2 reminders" vertex="1">
+        <mxCell id="uc3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Receive tiered follow-up reminders" vertex="1">
           <mxGeometry height="60" width="280" x="220" y="260" as="geometry" />
         </mxCell>
         <mxCell id="uc4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Log follow-up completion" vertex="1">
@@ -45,9 +45,6 @@
         </mxCell>
         <mxCell id="e6" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;endArrow=none;" target="uc6">
           <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Manager/Admin actors deliberately parked as &quot;future actor if this scales&quot; — not built. MVP scope cut, confirmed against routers/ (auth, upload, tasks, evidence only, auto_touch). Auto-Touch send is gated by AUTO_TOUCH_SEND_ENABLED — currently off pending company authorization; generate is always available, send is not. Verified 2026-08-17 against routers/auto_touch.py, services/auto_touch_service.py." vertex="1">
-          <mxGeometry height="90" width="400" x="180" y="620" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -169,7 +166,7 @@
             <mxPoint x="1040" y="365" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="m9" edge="1" parent="1" style="html=1;fontSize=11;" value="9. INSERT 3x FollowUpTask (2D=+2d / 2W=+14d / 2M=+60d, from posting_date)">
+        <mxCell id="m9" edge="1" parent="1" style="html=1;fontSize=11;" value="9. INSERT 3x FollowUpTask (T1/T2/T3 tiers, offsets from posting_date)">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1040" y="400" as="sourcePoint" />
             <mxPoint x="1240" y="400" as="targetPoint" />
@@ -219,9 +216,6 @@
             <mxPoint x="435" y="730" as="sourcePoint" />
             <mxPoint x="1240" y="730" as="targetPoint" />
           </mxGeometry>
-        </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Endpoint paths, force=false query param, JWT-scoped GET /tasks, and 2D/2W/2M offsets (2/14/60 days) verified 2026-08-17 against routers/upload.py, routers/tasks.py, routers/evidence.py, services/task_scheduler.py." vertex="1">
-          <mxGeometry height="50" width="900" x="35" y="800" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -297,17 +291,14 @@
         <mxCell id="e7" edge="1" parent="1" source="services" style="html=1;fontSize=11;" target="drive" value="evidence photo">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e8" edge="1" parent="1" source="services" style="html=1;fontSize=11;" target="line" value="2-2-2 reminders">
+        <mxCell id="e8" edge="1" parent="1" source="services" style="html=1;fontSize=11;" target="line" value="tiered reminders">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e9" edge="1" parent="1" source="services" style="html=1;fontSize=11;" target="smtp" value="2-2-2 reminders">
+        <mxCell id="e9" edge="1" parent="1" source="services" style="html=1;fontSize=11;" target="smtp" value="tiered reminders">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e10" edge="1" parent="1" source="services" style="html=1;fontSize=11;" target="anthropic" value="generate draft message">
           <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="repositories/ layer, and LINE/SMTP notification channels, verified 2026-08-17 (backend/app/repositories/, services/line_client.py, services/smtp_client.py) — real, not in the earlier draft. CLAUDE.md Rule 7 (SAP never touches MySQL directly) and Repository Pattern (Services -&gt; Repositories -&gt; MySQL, never skip a layer) are enforced project rules, not just diagram theory. Auto-Touch&#39;s send path (services -&gt; line/smtp) is gated by settings.AUTO_TOUCH_SEND_ENABLED — a config-level kill switch, checked before any dispatch; message generation (services -&gt; Anthropic) is unaffected by this gate and always available. Verified against services/auto_touch_service.py, services/message_generator.py, app/config.py." vertex="1">
-          <mxGeometry height="100" width="650" x="40" y="550" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -326,7 +317,7 @@
         <mxCell id="CUSTOMER" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;CUSTOMER&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;customer_id&amp;nbsp;PK&lt;br&gt;name&lt;br&gt;phone&amp;nbsp;(PII)&lt;br&gt;email&amp;nbsp;(PII)&lt;br&gt;line_id&lt;br&gt;language&lt;br&gt;do_not_contact&lt;br&gt;source&amp;nbsp;(crm_import|manual|sap_only)&lt;br&gt;staff_id&amp;nbsp;FK&amp;nbsp;(nullable)" vertex="1">
           <mxGeometry height="190" width="260" x="680" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="MESSAGE" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;MESSAGE&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;customer_id&amp;nbsp;FK&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;task_id&amp;nbsp;FK&amp;nbsp;(nullable)&lt;br&gt;touchpoint_type&amp;nbsp;(2D|2W|2M)&lt;br&gt;message_text&lt;br&gt;channel_line&amp;nbsp;/&amp;nbsp;channel_email&lt;br&gt;status_line&amp;nbsp;/&amp;nbsp;status_email&lt;br&gt;sent_at" vertex="1">
+        <mxCell id="MESSAGE" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;MESSAGE&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;customer_id&amp;nbsp;FK&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;task_id&amp;nbsp;FK&amp;nbsp;(nullable)&lt;br&gt;touchpoint_type&amp;nbsp;(T1|T2|T3)&lt;br&gt;message_text&lt;br&gt;channel_line&amp;nbsp;/&amp;nbsp;channel_email&lt;br&gt;status_line&amp;nbsp;/&amp;nbsp;status_email&lt;br&gt;sent_at" vertex="1">
           <mxGeometry height="190" width="260" x="1020" y="40" as="geometry" />
         </mxCell>
         <mxCell id="UPLOAD_LOG" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#f5f5f5;strokeColor=#666666;" value="&lt;b&gt;UPLOAD_LOG&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;store_id&amp;nbsp;FK&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;filename&lt;br&gt;uploaded_at&lt;br&gt;row_count&lt;br&gt;tasks_created&lt;br&gt;date_range_start&amp;nbsp;/&amp;nbsp;end&lt;br&gt;status&amp;nbsp;(success|error)" vertex="1">
@@ -335,7 +326,7 @@
         <mxCell id="TRANSACTION" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;TRANSACTION&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;idoc_number&amp;nbsp;PK&lt;br&gt;posting_date&lt;br&gt;ean&lt;br&gt;material_desc&lt;br&gt;customer_id&amp;nbsp;(SAP&amp;nbsp;code&amp;nbsp;-&amp;nbsp;NOT&amp;nbsp;enforced&amp;nbsp;FK)&lt;br&gt;staff_id&amp;nbsp;FK&lt;br&gt;sales_rep_name&lt;br&gt;customer_name&amp;nbsp;(nullable, migration 0010)&lt;br&gt;price&amp;nbsp;(nullable, migration 0009)&lt;br&gt;returned" vertex="1">
           <mxGeometry height="220" width="260" x="340" y="340" as="geometry" />
         </mxCell>
-        <mxCell id="FOLLOW_UP_TASK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;FOLLOW_UP_TASK&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;customer_id&lt;br&gt;idoc_number&amp;nbsp;FK&lt;br&gt;task_type&amp;nbsp;(2D|2W|2M)&lt;br&gt;task_basis&lt;br&gt;due_date&lt;br&gt;calculated_from&lt;br&gt;status&amp;nbsp;(Pending|Done|Superseded)&lt;br&gt;skipped_until&amp;nbsp;(Auto-Touch)" vertex="1">
+        <mxCell id="FOLLOW_UP_TASK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;FOLLOW_UP_TASK&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;customer_id&lt;br&gt;idoc_number&amp;nbsp;FK&lt;br&gt;task_type&amp;nbsp;(T1|T2|T3)&lt;br&gt;task_basis&lt;br&gt;due_date&lt;br&gt;calculated_from&lt;br&gt;status&amp;nbsp;(Pending|Done|Superseded)&lt;br&gt;skipped_until&amp;nbsp;(Auto-Touch)" vertex="1">
           <mxGeometry height="200" width="260" x="680" y="340" as="geometry" />
         </mxCell>
         <mxCell id="EVIDENCE_LOG" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;EVIDENCE_LOG&lt;/b&gt;&lt;hr size=&quot;1&quot;/&gt;id&amp;nbsp;PK&lt;br&gt;task_id&amp;nbsp;FK&lt;br&gt;notes&lt;br&gt;image_uri&amp;nbsp;(nullable&amp;nbsp;if&amp;nbsp;Drive&amp;nbsp;upload&amp;nbsp;failed)&lt;br&gt;image_size_kb&lt;br&gt;timestamp&lt;br&gt;staff_id&amp;nbsp;FK" vertex="1">
@@ -378,9 +369,6 @@
               <mxPoint x="810" y="260" />
             </Array>
           </mxGeometry>
-        </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Verified 2026-08-17 against backend/app/models/*.py — field names, nullability, and FK choices are the real current schema (includes Store, Message, UploadLog, which earlier drafts omitted)." vertex="1">
-          <mxGeometry height="40" width="700" x="40" y="570" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -447,7 +435,7 @@
         <mxCell id="f3" edge="1" parent="1" source="D1" style="html=1;fontSize=11;" target="P2" value="posting_date">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="f4" edge="1" parent="1" source="P2" style="html=1;fontSize=11;" target="D2" value="2D/2W/2M tasks">
+        <mxCell id="f4" edge="1" parent="1" source="P2" style="html=1;fontSize=11;" target="D2" value="T1/T2/T3 tasks">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="f5" edge="1" parent="1" source="D2" style="html=1;fontSize=11;" target="P3" value="due tasks">
@@ -527,13 +515,10 @@
         <mxCell id="f22" edge="1" parent="1" source="P5" style="html=1;fontSize=11;" target="EmailEnt" value="send email">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Level 0 (separate tab) collapses P1-P5 into one &quot;Lumine System&quot; process with 6 external entities. Level 2 (separate tabs, one per feature) decomposes each process below into its real sub-steps. P5 Auto-Touch and D5 Messages added 2026-08-17 — were missing from the original draft despite the Message model/table already existing and being written to by auto_touch_repo.create_message(). Processes verified against routers/upload.py (P1), services/task_scheduler.py (P2), routers/evidence.py (P3), routers/customers.py (P4), routers/auto_touch.py + services/auto_touch_service.py (P5)." vertex="1">
-          <mxGeometry height="90" width="760" x="300" y="700" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram name="BPMN - Lumine 2-2-2 Lifecycle" id="bpmn1">
+  <diagram name="BPMN - Lumine Tiered Follow-up Lifecycle" id="bpmn1">
     <mxGraphModel dx="2052" dy="1037" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="700" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -580,7 +565,7 @@
         <mxCell id="insert" parent="lane2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Insert Transaction" vertex="1">
           <mxGeometry height="60" width="140" x="560" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="sched" parent="lane2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Create 2D / 2W / 2M&#xa;FollowUpTasks" vertex="1">
+        <mxCell id="sched" parent="lane2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Create T1 / T2 / T3&#xa;FollowUpTasks" vertex="1">
           <mxGeometry height="60" width="140" x="740" y="20" as="geometry" />
         </mxCell>
         <mxCell id="due" parent="lane2" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Task due&#xa;today?" vertex="1">
@@ -692,9 +677,6 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Verified 2026-08-17 against routers/upload.py: force=false (default) rejects on overlap and returns a 409-style conflict payload; force=true bypasses the check and upserts. The loop only closes when evidence is logged (manual) or a message is dispatched (Auto-Touch) — not when the due date passes; status stays Pending until a human acts, or forever if repeatedly skipped. Auto-Touch branch added 2026-08-17, verified against routers/auto_touch.py and services/auto_touch_service.py: the send-gate (AUTO_TOUCH_SEND_ENABLED) is checked before any dispatch and is currently off in production pending company authorization — generate/review always works, send does not. Shape convention: rounded = start/end event, rectangle = task, diamond = gateway — standard BPMN notation." vertex="1">
-          <mxGeometry height="70" width="1200" x="40" y="620" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -747,9 +729,6 @@
         </mxCell>
         <mxCell id="f8" edge="1" parent="1" source="AnthropicEnt" style="html=1;dashed=1;fontSize=11;" target="P0" value="draft text">
           <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Context diagram — collapses all 5 features (Import, Schedule, Complete Follow-up, View Profile, Auto-Touch) into one process against 6 external entities. See &#39;DFD Level 1 - Lumine&#39; for the 5-process breakdown, and the 5 &#39;DFD Level 2&#39; tabs for each feature&#39;s internal steps. Verified 2026-08-17." vertex="1">
-          <mxGeometry height="60" width="600" x="300" y="620" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -849,7 +828,7 @@
             <mxPoint x="1275" y="215" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="m5" value="5. due/overdue rows, ordered 2D → 2W → 2M" style="html=1;dashed=1;fontSize=11;" edge="1" parent="1">
+        <mxCell id="m5" value="5. due/overdue rows, ordered T1 → T2 → T3" style="html=1;dashed=1;fontSize=11;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1275" y="250" as="sourcePoint" />
             <mxPoint x="645" y="250" as="targetPoint" />
@@ -981,9 +960,6 @@
             <mxPoint x="225" y="1075" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="note" value="Verified 2026-08-17 against routers/auto_touch.py, services/auto_touch_service.py, services/message_generator.py, repositories/auto_touch_repo.py. Generate and send are always two separate calls — no auto-send is a permanent product rule, not a current limitation. The send-gate is checked first, before any DB lookup or dispatch." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
-          <mxGeometry x="35" y="1095" width="1000" height="20" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -1004,7 +980,7 @@
         <mxCell id="P2_2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="2.2&#xa;Supersede if found&#xa;(cycles_reset flag)" vertex="1">
           <mxGeometry height="70" width="180" x="500" y="200" as="geometry" />
         </mxCell>
-        <mxCell id="P2_3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="2.3&#xa;Calculate due dates&#xa;(2D +2d / 2W +14d / 2M +60d,&#xa;from posting_date)" vertex="1">
+        <mxCell id="P2_3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="2.3&#xa;Calculate due dates&#xa;(T1/T2/T3 offsets,&#xa;from posting_date)" vertex="1">
           <mxGeometry height="90" width="200" x="730" y="190" as="geometry" />
         </mxCell>
         <mxCell id="P2_4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="2.4&#xa;Insert 3&#xa;FollowUpTask rows" vertex="1">
@@ -1041,9 +1017,6 @@
               <mxPoint x="780" y="90" />
             </Array>
           </mxGeometry>
-        </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Verified 2026-08-17 against services/cycle_reset.py, services/task_scheduler.py. Order matters: supersede BEFORE schedule — never have both old and new Pending simultaneously (cycle_reset.py comment). Offsets are fixed per SRS §5 FR-02: task_basis is always posting_date, never call date; no weekend/holiday adjustment — due dates display as-is. First purchase (no pending tasks found) skips 2.2 entirely, cycles_reset=0." vertex="1">
-          <mxGeometry height="60" width="900" x="280" y="330" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -1119,9 +1092,6 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Verified 2026-08-17 against routers/tasks.py, routers/evidence.py. GET tasks is scoped to staff_id from the JWT only, never the request body. Drive upload failure is non-fatal by design — the evidence record is still saved with image_uri=null rather than blocking the associate (routers/evidence.py comment)." vertex="1">
-          <mxGeometry height="50" width="1000" x="280" y="400" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -1171,9 +1141,6 @@
         </mxCell>
         <mxCell id="f6" edge="1" parent="1" source="P1_3" style="html=1;fontSize=11;" target="P1_4" value="posting_date, customer_id">
           <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Verified 2026-08-17 against routers/upload.py, services/sap_parser.py, services/cycle_reset.py. Flow per upload.py&#39;s own docstring: &#39;SAP file → SAPParser (Rule 7) → overlap check → transaction_repo → CycleReset → upload_log_repo → response.&#39; 1.2: force=false (default) rejects on overlap with a 409-style conflict; force=true bypasses and upserts. 1.4 hands off directly into Cycle Reset (supersede-before-schedule) — decomposed in the &#39;DFD Level 2 - Schedule Follow-ups&#39; tab." vertex="1">
-          <mxGeometry height="60" width="1250" x="40" y="400" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -1235,9 +1202,6 @@
               <mxPoint x="110" y="320" />
             </Array>
           </mxGeometry>
-        </mxCell>
-        <mxCell id="note" value="Verified 2026-08-17 against routers/customers.py. Customer Profile (GET .../{customer_id}, .../transactions, .../tasks) is store-wide for any staff role — any associate sees a customer&#39;s full history with all staff in their own store_id, never cross-store. This is a documented exception (CLAUDE.md Auth Rules, approved 2026-07-28), not a bug: normal endpoints scope to staff_id, this one scopes to store_id." style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
-          <mxGeometry x="280" y="270" width="900" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
@@ -1365,9 +1329,6 @@
               <mxPoint x="230" y="60" />
             </Array>
           </mxGeometry>
-        </mxCell>
-        <mxCell id="note" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;fontColor=#666666;" value="Verified 2026-08-17 against routers/auto_touch.py, services/auto_touch_service.py, repositories/auto_touch_repo.py, services/message_generator.py. 5.4 is checked first — before any DB lookup or dispatch (auto_touch_service.py comment) — so a customer can never receive a message while AUTO_TOUCH_SEND_ENABLED is off, regardless of configured LINE/email credentials. Generate (5.2) and send (5.4/5.5) are always two separate calls — no auto-send is a permanent product rule, not a current limitation." vertex="1">
-          <mxGeometry height="70" width="1200" x="40" y="630" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
