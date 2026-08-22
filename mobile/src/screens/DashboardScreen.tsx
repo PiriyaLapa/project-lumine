@@ -9,7 +9,7 @@
  * Offline: shows cached tasks with OfflineBanner. Upload/Done require internet.
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   FlatList,
@@ -24,11 +24,13 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import client, { tokenStorage, authEvents } from '../api/client';
 import { offlineCache, CachedTask } from '../cache/offlineCache';
 import TaskCard from '../components/TaskCard';
 import OfflineBanner from '../components/OfflineBanner';
+import AppDrawer from '../components/AppDrawer';
 import { THEME } from '../styles/theme';
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, 'Dashboard'> };
@@ -41,6 +43,12 @@ export default function DashboardScreen({ navigation }: Props) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [autoTouchDue, setAutoTouchDue] = useState(0);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
+  // useFocusEffect and RefreshControl's onRefresh both call fetchTasks — a ref
+  // (not state) guards against them racing, since state updates aren't visible
+  // synchronously across two calls firing close together.
+  const isFetchingTasksRef = useRef(false);
 
   // Read role once on mount — determines header title for N1/N2 verification
   useEffect(() => {
@@ -50,12 +58,13 @@ export default function DashboardScreen({ navigation }: Props) {
   // Law 1 — Pull on Focus: always fetch fresh data when screen comes to foreground
   useFocusEffect(
     useCallback(() => {
-      fetchTasks();
-      fetchAutoTouchStatus();
+      fetchTasks().then(() => fetchAutoTouchStatus());
     }, [])
   );
 
   const fetchTasks = async () => {
+    if (isFetchingTasksRef.current) return;
+    isFetchingTasksRef.current = true;
     setLoading(true);
     try {
       // Field names match openapi.yaml FollowUpTask schema
@@ -80,6 +89,7 @@ export default function DashboardScreen({ navigation }: Props) {
       }
     } finally {
       setLoading(false);
+      isFetchingTasksRef.current = false;
     }
   };
 
@@ -132,48 +142,30 @@ export default function DashboardScreen({ navigation }: Props) {
       <OfflineBanner />
 
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.hamburgerButton}
+          onPress={() => setDrawerVisible(true)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="menu" size={26} color={THEME.colors.text} />
+          {autoTouchDue > 0 && (
+            <View style={styles.hamburgerBadge}>
+              <Text style={styles.badgeText}>{autoTouchDue}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
         <Text style={styles.title}>
           {role === 'store_manager' ? 'Store Dashboard' : 'My Tasks'}
         </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.headerActions}
-        >
-          <TouchableOpacity
-            style={styles.historyButton}
-            onPress={() => navigation.navigate('AutoTouch')}
-          >
-            <Text style={styles.historyText}>Auto-Touch</Text>
-            {autoTouchDue > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{autoTouchDue}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.historyButton}
-            onPress={() => navigation.navigate('FollowUpDashboard')}
-          >
-            <Text style={styles.historyText}>Follow-Up Report</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.historyButton}
-            onPress={() => navigation.navigate('CompletedTasks')}
-          >
-            <Text style={styles.historyText}>History</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.uploadButton}
-            onPress={() => navigation.navigate('Upload')}
-          >
-            <Text style={styles.uploadText}>Upload SAP</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
-        </ScrollView>
       </View>
+
+      <AppDrawer
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        autoTouchDue={autoTouchDue}
+        onLogout={handleLogout}
+        navigation={navigation}
+      />
 
       {loading && tasks.length === 0 ? (
         <ActivityIndicator color={THEME.colors.primary} style={{ marginTop: 40 }} />
@@ -224,6 +216,9 @@ export default function DashboardScreen({ navigation }: Props) {
               status={item.status}
               staff_name={item.staff_name}
               onPress={(id) => navigation.navigate('TaskDetail', { taskId: id })}
+              onCustomerPress={(customerId, customerName) =>
+                navigation.navigate('CustomerProfile', { customer_id: customerId, customer_name: customerName })
+              }
             />
           )}
           ListEmptyComponent={
@@ -240,26 +235,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: THEME.colors.background },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: THEME.spacing.md,
     padding: 20,
     paddingTop: 56,
   },
   title: { fontSize: THEME.fontSize.xxl, fontWeight: '800', color: THEME.colors.text },
-  headerActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  historyButton: {
-    borderRadius: THEME.radius.sm,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: THEME.colors.primary,
-    position: 'relative',
-  },
-  historyText: { color: THEME.colors.primary, fontSize: THEME.fontSize.sm, fontWeight: '600' },
-  badge: {
+  hamburgerButton: { position: 'relative', padding: 2 },
+  hamburgerBadge: {
     position: 'absolute',
-    top: -6,
-    right: -6,
+    top: -4,
+    right: -4,
     minWidth: 16,
     height: 16,
     borderRadius: 8,
@@ -269,21 +255,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
   },
   badgeText: { color: THEME.colors.card, fontSize: THEME.fontSize.xs, fontWeight: '700' },
-  uploadButton: {
-    backgroundColor: THEME.colors.surface,
-    borderRadius: THEME.radius.sm,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: THEME.colors.divider,
-  },
-  uploadText: { color: THEME.colors.text, fontSize: THEME.fontSize.sm, fontWeight: '600' },
-  logoutButton: {
-    borderRadius: THEME.radius.sm,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  logoutText: { color: THEME.colors.textSecondary, fontSize: THEME.fontSize.sm, fontWeight: '600' },
   list: { padding: 16, paddingTop: 0 },
   empty: { color: THEME.colors.textMuted, textAlign: 'center', marginTop: 60, fontSize: THEME.fontSize.lg },
   chipsScroll: { marginBottom: 12 },

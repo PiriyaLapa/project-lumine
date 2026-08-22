@@ -43,6 +43,27 @@ def upsert(db: Session, data: dict) -> tuple[Transaction, bool]:
     return transaction, True
 
 
+def get_by_customer_in_store(db: Session, customer_id: str, store_id: int) -> list[Transaction]:
+    """
+    Return all transactions for a customer, scoped to staff in the given store.
+    Store-wide within a store — see CLAUDE.md Auth Rules exception for the
+    GET /customers/{id}/* endpoints.
+    """
+    from app.models.staff import Staff
+
+    return (
+        db.query(Transaction)
+        .join(Staff, Transaction.staff_id == Staff.id)
+        .filter(
+            Transaction.customer_id == customer_id,
+            Staff.store_id == store_id,
+            Staff.deleted_at.is_(None),
+        )
+        .order_by(Transaction.posting_date.desc())
+        .all()
+    )
+
+
 def create_many(db: Session, records: list[dict]) -> list[Transaction]:
     """
     Bulk-insert transactions from SAPParser output.

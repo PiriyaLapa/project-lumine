@@ -10,7 +10,8 @@ from pydantic import BaseModel, field_validator, model_validator
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.services.auth_service import AuthService, AuthError
+from app.middleware.auth import get_current_staff
+from app.services.auth_service import AuthService, AuthError, TokenPayload
 from app.repositories import staff_repo
 
 logger = logging.getLogger(__name__)
@@ -93,6 +94,13 @@ class RefreshResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class StaffProfileResponse(BaseModel):
+    staff_id: int
+    name: str
+    email: str
+    role: str
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -134,7 +142,6 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
     """
     Self-register a new staff account.
-    # TODO: Restrict role selection in production — any visitor can currently register as store_manager.
     Returns access + refresh token pair for immediate session creation.
     """
     existing = staff_repo.get_by_email(db, body.email)
@@ -155,12 +162,15 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
 
     hashed = AuthService.hash_password(body.password)
 
+    # GH #27: body.role is never trusted here — self-registration always
+    # creates sales_associate. store_manager accounts are granted separately
+    # (direct DB update), not through this public, unauthenticated endpoint.
     new_staff = staff_repo.create_staff(
         db,
         name=body.full_name,
         email=body.email,
         hashed_password=hashed,
-        role=body.role,
+        role="sales_associate",
         store_id=body.store_id,
         employee_code=body.employee_code,
     )
@@ -197,3 +207,21 @@ def refresh(body: RefreshRequest):
         )
 
     return RefreshResponse(access_token=new_access_token)
+
+
+@router.get("/me", response_model=StaffProfileResponse)
+def get_me(
+    db: Session = Depends(get_db),
+    current_staff: TokenPayload = Depends(get_current_staff),
+):
+    """Return the authenticated staff member's own name/email/role — powers the drawer profile header."""
+    staff = staff_repo.get_by_id(db, current_staff.staff_id)
+    if not staff:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Staff not found.")
+
+    return StaffProfileResponse(
+        staff_id=staff.id,
+        name=staff.name,
+        email=staff.email,
+        role=staff.role,
+    )

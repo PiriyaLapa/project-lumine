@@ -9,7 +9,7 @@ class FollowUpTask(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     customer_id = Column(String(100), nullable=False, index=True)
-    idoc_number = Column(String(100), ForeignKey("transactions.idoc_number"), nullable=False)
+    idoc_number = Column(String(100), ForeignKey("transactions.idoc_number"), nullable=False, index=True)
     task_type = Column(String(10), nullable=False)   # 2D | 2W | 2M
     task_basis = Column(String(20), nullable=False, default="posting_date")  # posting_date | manual_override
     due_date = Column(Date, nullable=False)

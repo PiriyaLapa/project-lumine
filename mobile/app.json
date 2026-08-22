@@ -2,7 +2,7 @@
   "expo": {
     "name": "Lumine",
     "slug": "lumine",
-    "version": "1.3.0",
+    "version": "1.5.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "platforms": [
@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.benz.lumine",
-      "versionCode": 5,
+      "versionCode": 8,
       "adaptiveIcon": {
         "backgroundColor": "#1a1a2e"
       },

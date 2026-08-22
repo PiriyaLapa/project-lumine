@@ -64,6 +64,11 @@ def get_tasks(
     else:
         tasks = task_repo.get_tasks_for_staff(db, current_staff.staff_id)
 
+    logger.info(
+        "tasks.get_tasks: staff=%d role=%s store_id=%s count=%d",
+        current_staff.staff_id, current_staff.role, current_staff.store_id, len(tasks),
+    )
+
     return [_serialize(t, name, cust_name) for t, name, cust_name in tasks]
 
 
