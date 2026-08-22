@@ -120,6 +120,24 @@ Linting: Black + ESLint
 Storage: Google Drive API v3
 API versioning: /api/v1/ prefix always
 
+## E2E Testing
+`backend/tests/` (default `pytest`) is mocked-DB contract tests only. Real E2E lives separately:
+
+**Backend** — real server + real MySQL, fully isolated from the dev/QA stack (never touches `lumine_mysql_data`):
+```
+docker-compose -f docker-compose.e2e.yml up -d --build
+docker cp backend/scripts/seed_e2e_data.py lumine-e2e-backend-1:/app/scripts/seed_e2e_data.py
+docker exec lumine-e2e-backend-1 python scripts/seed_e2e_data.py
+pytest backend/tests_e2e
+docker-compose -f docker-compose.e2e.yml down -v   # wipes only the E2E stack
+```
+
+**Mobile** — Maestro flows in `mobile/.maestro/*.yaml`, driving Expo Go on the emulator:
+```
+maestro test mobile/.maestro/login.yaml
+```
+Requires `adb reverse tcp:8081 tcp:8081` and Metro running first. Point `EXPO_PUBLIC_API_URL` at the E2E backend (`:8010`) for full isolation, or leave it on the dev stack (`:8000`) to test against existing QA data. Maestro CLI needs a Java runtime — see `mobile/.maestro/` flow file comments for known limitations (some taps are point-based, not selector-based, since interactive elements don't have testIDs yet).
+
 ## What NOT To Do
 - No raw SQL strings — SQLAlchemy ORM only
 - No business logic in routers

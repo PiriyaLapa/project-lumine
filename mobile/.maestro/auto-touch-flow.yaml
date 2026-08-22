@@ -1,0 +1,12 @@
+# E2E — open a due Auto-Touch customer, view the AI draft, Skip it
+# (non-destructive — does not call the real send/message endpoint, unlike
+# "Mark as Contacted", so this flow is safe to re-run against shared QA data).
+appId: host.exp.exponent
+---
+- runFlow: login.yaml
+- tapOn: "Auto-Touch"
+- tapOn:
+    point: "50%,25%" # first due customer card
+- assertVisible: "Message Draft"
+- tapOn: "Skip — remind me tomorrow"
+- assertVisible: "Auto-Touch" # back on the queue list
