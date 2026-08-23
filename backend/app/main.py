@@ -6,9 +6,13 @@ All routes prefixed /api/v1/ as per SRS §11.
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.routers import auth, upload, tasks, evidence, reports, stores, customers, auto_touch
 from app.config import settings
+from app.rate_limit import limiter
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,6 +30,10 @@ app = FastAPI(
     redoc_url=_redoc_url,
     openapi_url=_openapi_url,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
