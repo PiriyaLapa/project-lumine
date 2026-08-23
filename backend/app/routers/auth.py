@@ -5,12 +5,13 @@ All other endpoints use Depends(get_current_staff).
 """
 import logging
 import re
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, field_validator, model_validator
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.middleware.auth import get_current_staff
+from app.rate_limit import limiter
 from app.services.auth_service import AuthService, AuthError, TokenPayload
 from app.repositories import staff_repo
 
@@ -107,10 +108,13 @@ class StaffProfileResponse(BaseModel):
 
 
 @router.post("/login", response_model=AuthResponse)
-def login(body: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
     """
     Authenticate staff and return access + refresh token pair.
     staff_id and role are embedded in the JWT — client does not set them.
+    Rate-limited to 10 attempts/minute per IP — no brute-force protection
+    existed here before (2026-08-23 audit).
     """
     staff = staff_repo.get_by_email(db, body.email)
 
@@ -142,7 +146,6 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
     """
     Self-register a new staff account.
-    # TODO: Restrict role selection in production — any visitor can currently register as store_manager.
     Returns access + refresh token pair for immediate session creation.
     """
     existing = staff_repo.get_by_email(db, body.email)
@@ -163,12 +166,15 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
 
     hashed = AuthService.hash_password(body.password)
 
+    # GH #27: body.role is never trusted here — self-registration always
+    # creates sales_associate. store_manager accounts are granted separately
+    # (direct DB update), not through this public, unauthenticated endpoint.
     new_staff = staff_repo.create_staff(
         db,
         name=body.full_name,
         email=body.email,
         hashed_password=hashed,
-        role=body.role,
+        role="sales_associate",
         store_id=body.store_id,
         employee_code=body.employee_code,
     )

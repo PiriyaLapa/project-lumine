@@ -39,7 +39,6 @@ export default function RegisterScreen({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [employeeCode, setEmployeeCode] = useState('');
-  const [role, setRole] = useState<'sales_associate' | 'store_manager'>('sales_associate');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -89,7 +88,9 @@ export default function RegisterScreen({ navigation }: Props) {
         email: email.trim().toLowerCase(),
         password,
         confirm_password: confirmPassword,
-        role,
+        // GH #27: self-registration is always sales_associate — backend ignores this
+        // field's value regardless, but it stays required by openapi.yaml's contract.
+        role: 'sales_associate',
         store_id: selectedStore.id,
         employee_code: employeeCode.trim(),
       });
@@ -251,27 +252,6 @@ export default function RegisterScreen({ navigation }: Props) {
             />
           </View>
 
-          {/* Role Picker */}
-          <Text style={styles.label}>Role</Text>
-          <View style={styles.roleRow}>
-            <TouchableOpacity
-              style={[styles.roleBtn, role === 'sales_associate' && styles.roleBtnActive]}
-              onPress={() => setRole('sales_associate')}
-            >
-              <Text style={[styles.roleBtnText, role === 'sales_associate' && styles.roleBtnTextActive]}>
-                Sales Associate
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.roleBtn, role === 'store_manager' && styles.roleBtnActive]}
-              onPress={() => setRole('store_manager')}
-            >
-              <Text style={[styles.roleBtnText, role === 'store_manager' && styles.roleBtnTextActive]}>
-                Store Manager
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Store Picker */}
           <Text style={styles.label}>Store</Text>
           {renderStorePicker()}
@@ -391,17 +371,6 @@ const styles = StyleSheet.create({
   eyeBtn: { padding: 4 },
   pickerText: { flex: 1, color: THEME.colors.text, fontSize: THEME.fontSize.md },
   pickerPlaceholder: { flex: 1, color: THEME.colors.textMuted, fontSize: THEME.fontSize.md },
-  roleRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  roleBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: THEME.radius.md,
-    backgroundColor: THEME.colors.surface,
-    alignItems: 'center',
-  },
-  roleBtnActive: { backgroundColor: THEME.colors.primary },
-  roleBtnText: { color: THEME.colors.textSecondary, fontSize: THEME.fontSize.sm, fontWeight: '600' },
-  roleBtnTextActive: { color: THEME.colors.card },
   errorText: { color: THEME.colors.error, fontSize: THEME.fontSize.sm, marginBottom: 12, textAlign: 'center' },
   button: {
     backgroundColor: THEME.colors.primary,

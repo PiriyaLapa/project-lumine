@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lumine — Software Requirements Specification</title>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --sub: #4b5563;
+    --line: #d1d5db;
+    --accent: #0f766e;
+    --bg-soft: #f8fafc;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Georgia", "Times New Roman", serif;
+    color: var(--ink);
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  h1, h2, h3, h4 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .cover {
+    text-align: center;
+    padding: 64px 0 48px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 48px;
+  }
+  .cover .kicker {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .cover h1 { font-size: 34px; margin: 0 0 8px; }
+  .cover .subtitle { font-size: 17px; color: var(--sub); margin: 0 0 24px; }
+  .cover .meta { font-size: 12px; color: var(--sub); font-family: "Helvetica Neue", Arial, sans-serif; }
+  h2 {
+    font-size: 20px;
+    margin-top: 44px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  h3 { font-size: 16px; margin-top: 28px; color: var(--accent); }
+  h4 { font-size: 13.5px; margin-top: 18px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sub); }
+  p { margin: 10px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px;
+    font-size: 13.5px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--bg-soft); font-weight: 600; }
+  code {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    background: var(--bg-soft);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  ul, ol { margin: 8px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  .note {
+    background: var(--bg-soft);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    margin: 14px 0;
+  }
+  .section-num {
+    display: inline-block;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 6px;
+  }
+  @media print {
+    body { padding: 0 24px; }
+    .cover { padding-top: 24px; }
+    h2 { page-break-after: avoid; }
+    table, .note { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="kicker">Software Requirements Specification</div>
+  <h1>Lumine</h1>
+  <p class="subtitle">Evidence-Based CRM for Luxury Retail Sales Teams</p>
+  <p class="meta">Version 1.0 &middot; Reflects the system as designed, built, and deployed &middot; August 2026</p>
+</div>
+
+<h2><span class="section-num">1</span>Introduction</h2>
+
+<h3>1.1 Purpose</h3>
+<p>
+  Lumine is an evidence-based CRM built for a luxury retail sales team. It ingests point-of-sale
+  transaction data, automatically schedules a structured post-purchase follow-up cadence, and requires
+  photographic and written evidence before a follow-up can be marked complete. This document describes
+  the system as it is actually built and deployed today.
+</p>
+
+<h3>1.2 Scope</h3>
+<p>Two deployable applications sharing one API contract:</p>
+<ul>
+  <li><strong>Backend</strong> — Python FastAPI + SQLAlchemy on a MySQL-compatible database, 8 routers / 24 REST endpoints.</li>
+  <li><strong>Mobile</strong> — React Native + Expo (TypeScript), 14 screens, distributed as an Android build.</li>
+  <li><strong>Contract</strong> — an OpenAPI specification governs field names across both sides; the spec is treated as the single source of truth for the wire format.</li>
+</ul>
+
+<h3>1.3 Definitions</h3>
+<table>
+  <tr><th>Term</th><th>Meaning</th></tr>
+  <tr><td>Tiered cadence</td><td>Follow-up schedule: contact a customer at three defined intervals after a purchase — near-term, mid-term, and long-term</td></tr>
+  <tr><td>Cycle Reset</td><td>When a customer buys again, their pending follow-ups are superseded and a fresh cadence starts from the new purchase date</td></tr>
+  <tr><td>Evidence</td><td>Photo and notes an associate logs to confirm a follow-up actually happened</td></tr>
+  <tr><td>Auto-Touch</td><td>AI-assisted follow-up: drafts a personalized message for associate review before it is sent</td></tr>
+  <tr><td>PDPA</td><td>Thailand's Personal Data Protection Act, governing how customer contact details are stored and used</td></tr>
+</table>
+
+<h2><span class="section-num">2</span>Overall Description</h2>
+
+<h3>2.1 Product Functions</h3>
+<table>
+  <tr><th>Function</th><th>Area</th><th>Capability</th></tr>
+  <tr><td>Authentication</td><td>Auth</td><td>Login, registration, token refresh, session info</td></tr>
+  <tr><td>Store lookup</td><td>Stores</td><td>Public store directory</td></tr>
+  <tr><td>Transaction import</td><td>Upload</td><td>Point-of-sale export upload, upload history</td></tr>
+  <tr><td>Follow-up tasks</td><td>Tasks</td><td>List and complete follow-ups</td></tr>
+  <tr><td>Evidence</td><td>Evidence</td><td>Submit, retrieve, and update follow-up evidence</td></tr>
+  <tr><td>Reports / KPI</td><td>Reports</td><td>Completion-rate dashboard, per-store and per-associate</td></tr>
+  <tr><td>Customers</td><td>Customers</td><td>CRM import, registration, profile, transaction and task history</td></tr>
+  <tr><td>Auto-Touch</td><td>Auto-Touch</td><td>Daily queue, AI message drafting, send, skip, status</td></tr>
+</table>
+
+<h3>2.2 Operating Environment</h3>
+<table>
+  <tr><th>Layer</th><th>Detail</th></tr>
+  <tr><td>Backend hosting</td><td>Cloud-hosted, free-tier deployment</td></tr>
+  <tr><td>Database</td><td>MySQL-wire-protocol compatible cloud database</td></tr>
+  <tr><td>Local development</td><td>MySQL 8.0 via Docker Compose</td></tr>
+  <tr><td>Mobile runtime</td><td>React Native 0.74 + Expo SDK ~51, TypeScript</td></tr>
+  <tr><td>Mobile distribution</td><td>Managed build service, Android APK</td></tr>
+  <tr><td>Container</td><td>Non-root Python 3.11 image running Uvicorn</td></tr>
+</table>
+
+<h2><span class="section-num">3</span>System Architecture</h2>
+<p>Strict layering, enforced by team convention:</p>
+<p style="font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13.5px; background: var(--bg-soft); padding: 10px 14px; border-radius: 4px;">
+  Mobile (React Native) &rarr; HTTPS + JWT &rarr; Routers &rarr; Services &rarr; Repositories &rarr; Database
+</p>
+<ul>
+  <li><strong>Routers</strong> — HTTP concerns only: request parsing, auth, response shaping. No business logic.</li>
+  <li><strong>Services</strong> — business logic layer.</li>
+  <li><strong>Repositories</strong> — the only layer permitted to write database queries.</li>
+</ul>
+
+<h4>External Integrations</h4>
+<table>
+  <tr><th>Integration</th><th>Purpose</th></tr>
+  <tr><td>Cloud file storage</td><td>Evidence photo storage (upload failure is handled gracefully — see FR-04)</td></tr>
+  <tr><td>Claude (Anthropic) API</td><td>Auto-Touch draft message generation</td></tr>
+  <tr><td>LINE Messaging API</td><td>Auto-Touch dispatch, channel 1</td></tr>
+  <tr><td>Email (SMTP)</td><td>Auto-Touch dispatch, channel 2</td></tr>
+</table>
+<p class="note">
+  Full visual diagrams (Use Case, ER, Architecture, Data Flow, Sequence, BPMN) accompany this document —
+  13 diagram views reflecting the same current system this specification describes.
+</p>
+
+<h2><span class="section-num">4</span>Data Design</h2>
+<p>8 tables, reflecting the live schema field-by-field:</p>
+<table>
+  <tr><th>Table</th><th>Key Fields</th><th>Notes</th></tr>
+  <tr><td><code>stores</code></td><td>id, name</td><td>Minimal reference table</td></tr>
+  <tr><td><code>staff</code></td><td>id, employee code, name, role, store, email, password hash, soft-delete flag</td><td>Soft-delete supports PDPA-aligned data handling</td></tr>
+  <tr><td><code>customers</code></td><td>customer id, name, phone, email, LINE id, language, do-not-contact, source</td><td>Language and contact preference tracked per customer</td></tr>
+  <tr><td><code>transactions</code></td><td>document number, posting date, item, customer id, staff, price, returned flag</td><td>Customer linkage is intentionally optional — registration is not required to transact</td></tr>
+  <tr><td><code>follow_up_tasks</code></td><td>id, customer, transaction, tier code, due date, status</td><td>Status: Pending, Done, or Superseded by a newer cycle</td></tr>
+  <tr><td><code>evidence_logs</code></td><td>id, task, notes, image reference, timestamp, staff</td><td>Image reference is nullable if cloud upload failed</td></tr>
+  <tr><td><code>messages</code></td><td>id, customer, staff, task, channel, status, sent at</td><td>Auto-Touch's send-attempt log</td></tr>
+  <tr><td><code>upload_logs</code></td><td>id, store, staff, filename, row count, tasks created, status</td><td>Import audit trail</td></tr>
+</table>
+<p>Schema evolved through 11 incremental, linear migrations — from the initial release through the addition of
+Auto-Touch tracking fields and follow-up query indexing.</p>
+
+<h2><span class="section-num">5</span>Functional Requirements</h2>
+
+<h3>FR-01 &middot; Transaction Data Processing</h3>
+<p>Parses a point-of-sale export (CSV/Excel), maps columns via a configurable schema, and scopes rows to the
+uploading associate. A default import rejects on date-range overlap with existing data; an explicit override
+allows re-import to upsert rather than duplicate.</p>
+
+<h3>FR-02 &middot; Automated Tiered Follow-up Scheduling</h3>
+<p>Fixed offsets from the purchase date, at three tiers (near-term, mid-term, long-term). No weekend/holiday
+adjustment; due dates are calculated from the purchase date only, never from "today."</p>
+
+<h3>FR-03 &middot; Cycle Reset Logic</h3>
+<p>When an existing customer purchases again, all of their currently-pending follow-ups are superseded first,
+then a fresh cadence is created from the new purchase date — old and new pending cycles never coexist.</p>
+
+<h3>FR-04 &middot; Evidence Logging</h3>
+<p>Photo (compressed client-side, re-checked server-side) and notes up to 2,000 characters. Cloud storage
+upload failure is handled gracefully by design — the evidence record still saves, rather than blocking the
+associate from completing their work.</p>
+
+<h3>FR-05 &middot; Multi-Staff Data Isolation</h3>
+<table>
+  <tr><th>Access pattern</th><th>Sales associate</th><th>Store manager</th></tr>
+  <tr><td>Follow-up tasks</td><td>Own tasks only</td><td>All tasks in own store</td></tr>
+  <tr><td>Upload history</td><td>Not available</td><td>Own store only</td></tr>
+  <tr><td>Evidence records</td><td>Own evidence only</td><td>Any evidence in own store</td></tr>
+  <tr><td>Auto-Touch</td><td>Own customers</td><td>Own customers</td></tr>
+</table>
+
+<h3>FR-06 &middot; Customer Profile</h3>
+<p>Deliberately store-wide by design: any staff member can see a customer's full purchase and follow-up
+history across colleagues within their own store, but never across stores. Contact details (phone, email,
+messaging id) are excluded from this view to keep it usable for service continuity without exposing PII
+unnecessarily.</p>
+
+<h3>FR-07 &middot; Reports &amp; KPI Dashboard</h3>
+<p>Completion-rate reporting (done vs. pending, superseded tasks excluded) with a store-wide breakdown for
+managers and a single own-row view for associates — same response shape for both.</p>
+
+<h3>FR-08 &middot; Auto-Touch — AI-Assisted Follow-up</h3>
+<p>The most substantial subsystem added since the original design: a due-today queue, AI-drafted message
+generation (Claude), multi-channel dispatch (LINE and/or email), and a skip/defer flow. Draft generation
+and sending are always two separate steps — automated sending without human review is a deliberate,
+permanent product decision, not a current limitation. Dispatch is additionally gated behind an
+independent configuration flag, checked before any other logic runs.</p>
+
+<h3>FR-09 &middot; CRM Import &amp; Customer Registration</h3>
+<p>Bulk customer import from a fixed-format spreadsheet, plus point-of-sale quick registration with
+register-not-upsert semantics.</p>
+
+<h3>FR-10 &middot; Barcode/QR Customer Identification</h3>
+<p>Mobile-only, fully offline: renders a QR code encoding the customer id for scanning at a point-of-sale
+terminal.</p>
+
+<h2><span class="section-num">6</span>Non-Functional Requirements</h2>
+
+<h4>NFR-01 &middot; Security &amp; Authentication</h4>
+<p>JWT-based authentication (60-minute access token, 7-day refresh token), bcrypt password hashing. The
+authenticated staff identity is always derived from the token server-side — never accepted from the
+request body. A small set of endpoints (login, registration, token refresh, store directory, health check)
+are intentionally public.</p>
+
+<h4>NFR-02 &middot; PDPA / PII Compliance</h4>
+<p>Customer phone, email, and messaging id are treated as PII — never logged, never included in tokens or
+URL parameters. Do-not-contact preference is enforced at the data layer, not left to application logic.
+Staff soft-delete supports erasure-adjacent handling without breaking historical transaction integrity.</p>
+
+<h4>NFR-03 &middot; Performance</h4>
+<p>Key lookup columns are indexed (transaction document number, posting date, customer id, and follow-up
+task lookups), keeping list and dashboard queries responsive as data volume grows.</p>
+
+<h4>NFR-04 &middot; Usability</h4>
+<p>A single light theme, defined through a shared design-token file rather than per-screen styling — with an
+ongoing consistency pass to migrate the remaining screens fully onto shared tokens.</p>
+
+<h4>NFR-05 &middot; Offline Behavior</h4>
+<p>Read-only local cache for the task list, so the dashboard degrades gracefully on network loss. Actions
+that change data (evidence upload, imports, marking tasks done, Auto-Touch) require connectivity by
+design — network and server errors are deliberately distinguished in the UI so a temporary offline state
+never looks like a broken app.</p>
+
+<h4>NFR-06 &middot; Send-Gate Safety (Auto-Touch)</h4>
+<p>Automated message dispatch sits behind an independent, default-off configuration flag, checked before
+any other Auto-Touch logic runs. Feature-complete, but currently disabled in production — the mobile app
+supports manual review, copy, and share of AI-generated drafts while dispatch remains off.</p>
+
+<h2><span class="section-num">7</span>API Contract</h2>
+<p>A single OpenAPI specification defines 24 paths and 36 component schemas, and is treated as the
+authoritative source for field names on both the backend and mobile client — a field is never renamed or
+added on one side without updating the shared contract.</p>
+
+<h2><span class="section-num">8</span>Mobile Application</h2>
+
+<h3>8.1 Screens &amp; Navigation</h3>
+<p>A single native-stack navigator across 14 screens, each implementing its own header. Access to the app is
+gated by whether a valid session token is present at launch, backed up by server-side enforcement on every
+request.</p>
+<table>
+  <tr><th>Screen</th><th>Purpose</th></tr>
+  <tr><td>Login / Register</td><td>Authentication and self-registration</td></tr>
+  <tr><td>Dashboard</td><td>Today's task list — home screen</td></tr>
+  <tr><td>Task Detail</td><td>Single task detail and mark-done</td></tr>
+  <tr><td>Evidence / Evidence Detail</td><td>Submit and review follow-up evidence</td></tr>
+  <tr><td>Completed Tasks</td><td>Done-task history</td></tr>
+  <tr><td>Barcode</td><td>Customer QR code display</td></tr>
+  <tr><td>Upload / Upload History</td><td>Transaction import and audit log</td></tr>
+  <tr><td>Follow-Up Dashboard</td><td>KPI/report view with export</td></tr>
+  <tr><td>Auto-Touch / Auto-Touch Detail</td><td>Daily AI follow-up queue and message review</td></tr>
+  <tr><td>Customer Profile</td><td>Customer 360&deg; view of purchases and follow-ups</td></tr>
+</table>
+
+<h3>8.2 Data Freshness Model</h3>
+<p>No global app-state store — screens fetch directly and manage their own local state, governed by three
+consistent conventions: data refreshes whenever a screen regains focus; mutations update the UI
+immediately and roll back with a clear message on failure; and there is no real-time polling or
+WebSocket layer — every data change is user-triggered by design, keeping the app's behavior predictable.</p>
+
+<h3>8.3 Session Handling</h3>
+<p>Session token stored on-device, attached automatically to every request. On an expired session, the app
+transparently refreshes the token and retries once; concurrent requests share a single refresh attempt
+rather than racing. A failed refresh cleanly signs the user out.</p>
+
+<h2><span class="section-num">9</span>Testing &amp; Quality</h2>
+<p>331 automated backend tests across 33 test files, covering the service and repository layers. Test
+execution is currently a manual step in the development workflow rather than an enforced CI gate.</p>
+
+<h2><span class="section-num">10</span>Deployment &amp; Operations</h2>
+<p>Backend and database are deployed on free-tier cloud infrastructure, currently configured manually rather
+than through infrastructure-as-code. An early gap around automatic schema migration on deploy was
+identified and resolved by adding a manual migration-verification step to the deployment process — a
+useful lesson in treating "deploy" and "migrate" as two steps that must both be confirmed, not one.
+Mobile releases are built and distributed as an Android package through a managed build service.</p>
+
+<h2><span class="section-num">11</span>Known Limitations &amp; Future Work</h2>
+<ul>
+  <li>No automated CI/CD pipeline yet — testing, linting, and deployment are currently manual steps.</li>
+  <li>Automated Auto-Touch message dispatch is feature-complete but intentionally disabled in production
+      pending further validation; today the app supports manual review and send only.</li>
+  <li>A design-token consistency pass is in progress to fully retire remaining one-off styling in a handful
+      of older screens.</li>
+  <li>A small backlog of enhancements and edge cases (integration test coverage for Auto-Touch, backfilling
+      optional customer fields, minor UX refinements) is tracked for future iterations.</li>
+</ul>
+
+<h2><span class="section-num">12</span>Appendix</h2>
+<p><strong>Diagram set</strong>: 13 companion diagram views — Use Case, ER Diagram, Sequence (core flow and
+Auto-Touch), Architecture, Data Flow (Levels 0–2), and BPMN — reflecting the same current system this
+specification describes.</p>
+
+</body>
+</html>

@@ -9,7 +9,7 @@
  * Offline: shows cached tasks with OfflineBanner. Upload/Done require internet.
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   FlatList,
@@ -45,6 +45,11 @@ export default function DashboardScreen({ navigation }: Props) {
   const [autoTouchDue, setAutoTouchDue] = useState(0);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
+  // useFocusEffect and RefreshControl's onRefresh both call fetchTasks — a ref
+  // (not state) guards against them racing, since state updates aren't visible
+  // synchronously across two calls firing close together.
+  const isFetchingTasksRef = useRef(false);
+
   // Read role once on mount — determines header title for N1/N2 verification
   useEffect(() => {
     AsyncStorage.getItem('role').then((r) => setRole(r ?? ''));
@@ -53,12 +58,13 @@ export default function DashboardScreen({ navigation }: Props) {
   // Law 1 — Pull on Focus: always fetch fresh data when screen comes to foreground
   useFocusEffect(
     useCallback(() => {
-      fetchTasks();
-      fetchAutoTouchStatus();
+      fetchTasks().then(() => fetchAutoTouchStatus());
     }, [])
   );
 
   const fetchTasks = async () => {
+    if (isFetchingTasksRef.current) return;
+    isFetchingTasksRef.current = true;
     setLoading(true);
     try {
       // Field names match openapi.yaml FollowUpTask schema
@@ -83,6 +89,7 @@ export default function DashboardScreen({ navigation }: Props) {
       }
     } finally {
       setLoading(false);
+      isFetchingTasksRef.current = false;
     }
   };
 

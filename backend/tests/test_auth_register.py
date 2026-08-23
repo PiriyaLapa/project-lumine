@@ -177,6 +177,48 @@ class TestRegister:
         assert kwargs["employee_code"] == "56546"
         assert not kwargs["employee_code"].startswith("REG-")
 
+    # ---------------------------------------------------------------------------
+    # GH #27 — self-registration must never grant store_manager
+    # ---------------------------------------------------------------------------
+
+    def test_store_manager_role_in_request_is_ignored_creates_sales_associate(self):
+        """Security fix: client-submitted role is never trusted for self-registration."""
+        new_staff = make_staff(role="sales_associate")
+        app.dependency_overrides[get_db] = db_override()
+        client = TestClient(app)
+
+        payload = {**VALID, "role": "store_manager"}
+
+        with patch("app.routers.auth.staff_repo.get_by_email", return_value=None), \
+             patch("app.routers.auth.staff_repo.get_by_employee_code", return_value=None), \
+             patch("app.routers.auth.staff_repo.create_staff", return_value=new_staff) as mock_create:
+            resp = client.post("/api/v1/auth/register", json=payload)
+
+        app.dependency_overrides.clear()
+
+        assert resp.status_code == 201
+        assert resp.json()["role"] == "sales_associate"
+        _, kwargs = mock_create.call_args
+        assert kwargs["role"] == "sales_associate", "store_manager from request body must never reach staff_repo.create_staff"
+
+    def test_sales_associate_role_in_request_still_works(self):
+        """Sanity check: the (only) legitimate self-registration role still works."""
+        new_staff = make_staff(role="sales_associate")
+        app.dependency_overrides[get_db] = db_override()
+        client = TestClient(app)
+
+        with patch("app.routers.auth.staff_repo.get_by_email", return_value=None), \
+             patch("app.routers.auth.staff_repo.get_by_employee_code", return_value=None), \
+             patch("app.routers.auth.staff_repo.create_staff", return_value=new_staff) as mock_create:
+            resp = client.post("/api/v1/auth/register", json=VALID)
+
+        app.dependency_overrides.clear()
+
+        assert resp.status_code == 201
+        assert resp.json()["role"] == "sales_associate"
+        _, kwargs = mock_create.call_args
+        assert kwargs["role"] == "sales_associate"
+
     def test_employee_code_float_normalized(self):
         new_staff = make_staff()
         app.dependency_overrides[get_db] = db_override()

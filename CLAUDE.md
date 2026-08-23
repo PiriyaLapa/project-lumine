@@ -63,10 +63,12 @@ Commits: feat: · fix: · test: · docs:
 Phases 1–7 complete. Deployed.
 
 - Backend: https://lumine-api-qi77.onrender.com (Render free + TiDB Cloud free)
-- Mobile: last built APK v1.1.0 — Upload History + conflict detection (emulator verified ✅). v1.4.0 emulator-verified 2026-07-28 (Customer Profile, nav drawer, evidence logging end-to-end); APK not yet built — pending EAS build.
+- Mobile: last built APK v1.1.0 — Upload History + conflict detection (emulator verified ✅). v1.4.0 emulator-verified 2026-07-28 (Customer Profile, nav drawer, evidence logging end-to-end). 2026-07-29: Benz reported empty Dashboard after installing v1.4.0 — investigated, frontend JWT-race theory ruled out via code review, root cause unconfirmed. Diagnostic logging shipped instead (PR #30 → GH #29, merged to develop) to capture evidence if it recurs; monitoring, not blocking. Separately, "Could not load your tasks" reproduced in production — root-caused to a real concurrent-fetch race (useFocusEffect + pull-to-refresh both calling fetchTasks with no in-flight guard); fixed in PR #32, merged to develop. v1.5.0 (versionCode 7) shipped both this fix and GH #27's mobile change.
+- 2026-08-15: continued investigating "Could not load your tasks" — traced Auto-Touch's concurrent status fetch + a missing `follow_up_tasks.idoc_number` index as a contributing mechanism, fixed in PR #33 (merged to develop). While deploying that fix's migration, found the real dominant cause: **migration 0010 had never been applied to production** — `transactions.customer_name` didn't exist there, so `GET /api/v1/tasks` was failing on literally every call (confirmed via direct query against prod), not intermittently as prior sessions assumed. Applied migrations 0010+0011 to production TiDB directly; confirmed `GET /tasks` now succeeds live. **Lesson**: Render's deploy does not appear to auto-run `alembic upgrade head` — check `alembic current` against production after merging any migration, don't assume it applied. v1.5.1 (versionCode 8) EAS build shipping PR #33's mobile change.
+- 2026-08-17: created `docs/SRS_Lumine_v1.0_Current_State.md` — a fresh, code-verified SRS built by reading the live codebase end-to-end (8 routers/24 endpoints, 8 models, 16 services, 11 migrations, 14 mobile screens). **Companion to this v4.1 doc, not a replacement** — v4.1 remains the source of truth referenced above. Documents 2 subsystems not covered in v4.1 (Reports/KPI, Auto-Touch) and a consolidated Known Limitations list. Two real gaps found during the audit and filed: GH #36 (`GET /evidence/{task_id}` has no ownership/store scoping — unlike the approved Customer Profile exception, this one has no documented approval) and GH #37 (`GOOGLE_DRIVE_CREDENTIALS_FILE` in `config.py` is dead code; the real env var is `GOOGLE_DRIVE_CREDENTIALS_PATH`, read directly in `google_drive_client.py`). Both need an architect decision.
 - Next: Stage 5 — real user testing (Eat Your Own Dog Food, 2–4 weeks solo)
 
-326/326 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-28).
+331/331 backend tests pass, 100% coverage on backend/app/services/ (verified 2026-07-29). GH #27 fixed: self-registration now always creates sales_associate, ignoring client-submitted role; mobile Register screen's role picker removed to match. Installed APK (v1.4.0/6) predates this fix — not yet in a built APK.
 
 ## APK Versioning
 Source of truth: mobile/app.json — version + versionCode.
@@ -79,6 +81,8 @@ Do not use any other source for APK version.
 | v1.2.0 | 4 | Light theme, Sold by label, staff filter chips, force re-upload upsert |
 | v1.3.0 | 5 | employee_code on Register, Completed Tasks History, Editable Evidence |
 | v1.4.0 | 6 | Customer Profile (purchase + follow-up history), nav drawer replacing Dashboard header buttons |
+| v1.5.0 | 7 | GH #27 fix: self-registration forced to sales_associate (role picker removed from Register screen); GH #29-adjacent fix: Dashboard concurrent-fetch race-condition guard (useFocusEffect + pull-to-refresh could double-fire GET /api/v1/tasks) |
+| v1.5.1 | 8 | Dashboard fix (PR #33): `fetchAutoTouchStatus()` decoupled from `fetchTasks()` in `useFocusEffect` (was firing concurrently); `follow_up_tasks.idoc_number` indexed (migration 0011). Real root cause of "Could not load your tasks" found separately during production migration deploy: migration 0010 (`transactions.customer_name`) had never been applied to production — `GET /api/v1/tasks` was failing on every call, deterministically, not intermittently. Migrations 0010+0011 applied to production TiDB 2026-08-15; `GET /tasks` confirmed working live. |
 
 ## UI Theme Rules
 
@@ -111,10 +115,28 @@ Mobile: React Native + TypeScript
 Auth: JWT via python-jose, bcrypt for passwords
 SAP parsing: pandas
 Image processing: Pillow (compress before upload)
-Tests: pytest + pytest-cov
+Tests: pytest + pytest-cov — run via `backend/venv/bin/pytest` (or `.venv/bin/pytest`), never bare `pytest`: it resolves to system Python 3.12, which is missing `pandas` and other deps. Two venvs exist (`venv/`, `.venv/`, both pytest 8.2.0) — either works, neither is canonical.
 Linting: Black + ESLint
 Storage: Google Drive API v3
 API versioning: /api/v1/ prefix always
+
+## E2E Testing
+`backend/tests/` (default `pytest`) is mocked-DB contract tests only. Real E2E lives separately:
+
+**Backend** — real server + real MySQL, fully isolated from the dev/QA stack (never touches `lumine_mysql_data`):
+```
+docker-compose -f docker-compose.e2e.yml up -d --build
+docker cp backend/scripts/seed_e2e_data.py lumine-e2e-backend-1:/app/scripts/seed_e2e_data.py
+docker exec lumine-e2e-backend-1 python scripts/seed_e2e_data.py
+pytest backend/tests_e2e
+docker-compose -f docker-compose.e2e.yml down -v   # wipes only the E2E stack
+```
+
+**Mobile** — Maestro flows in `mobile/.maestro/*.yaml`, driving Expo Go on the emulator:
+```
+maestro test mobile/.maestro/login.yaml
+```
+Requires `adb reverse tcp:8081 tcp:8081` and Metro running first. Point `EXPO_PUBLIC_API_URL` at the E2E backend (`:8010`) for full isolation, or leave it on the dev stack (`:8000`) to test against existing QA data. Maestro CLI needs a Java runtime — see `mobile/.maestro/` flow file comments for known limitations (some taps are point-based, not selector-based, since interactive elements don't have testIDs yet).
 
 ## What NOT To Do
 - No raw SQL strings — SQLAlchemy ORM only

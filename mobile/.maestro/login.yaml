@@ -1,0 +1,19 @@
+# E2E — login → Dashboard, the flow every other flow builds on.
+# Prereqs: `adb reverse tcp:8081 tcp:8081`, Metro running (`npx expo start`),
+# and the backend the app's EXPO_PUBLIC_API_URL points at (dev stack or the
+# E2E stack on :8010) reachable + seeded.
+#
+# Uses the dev-stack seed (backend/scripts/seed.py) manager account by
+# default. Point EXPO_PUBLIC_API_URL at the E2E stack (:8010) and swap in
+# e2e@lumine.test / e2e-password-123 (backend/scripts/seed_e2e_data.py) for
+# a fully isolated run.
+appId: host.exp.exponent
+---
+- openLink: "exp://127.0.0.1:8081"
+- assertVisible: "LUMINE"
+- tapOn: "Email Address"
+- inputText: "manager@lumine.test"
+- tapOn: "Password"
+- inputText: "password123"
+- tapOn: "Login"
+- assertVisible: "Store Dashboard"

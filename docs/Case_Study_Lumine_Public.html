@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lumine — Case Study</title>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --sub: #4b5563;
+    --line: #d1d5db;
+    --accent: #0f766e;
+    --bg-soft: #f8fafc;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Georgia", "Times New Roman", serif;
+    color: var(--ink);
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  h1, h2, h3, h4 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .cover {
+    text-align: center;
+    padding: 72px 0 48px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 48px;
+  }
+  .cover .kicker {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .cover h1 { font-size: 36px; margin: 0 0 10px; }
+  .cover .subtitle { font-size: 18px; color: var(--sub); margin: 0 0 28px; }
+  .cover .meta { font-size: 12px; color: var(--sub); font-family: "Helvetica Neue", Arial, sans-serif; }
+  h2 {
+    font-size: 22px;
+    margin-top: 52px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  h2 .num {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 8px;
+  }
+  h3 { font-size: 16px; margin-top: 24px; color: var(--accent); }
+  p { margin: 12px 0; }
+  .lede {
+    font-size: 17px;
+    color: var(--sub);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px;
+    font-size: 13.5px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--bg-soft); font-weight: 600; }
+  .fact-panel {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 18px 0 24px;
+  }
+  .fact {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  .fact .num { font-size: 22px; font-weight: 700; color: var(--accent); display: block; }
+  .fact .label { font-size: 12px; color: var(--sub); }
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: center;
+    margin: 18px 0 8px;
+  }
+  .pair .frame {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-soft);
+  }
+  .pair .frame img { display: block; width: 100%; height: auto; }
+  .pair-tag {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin-bottom: 4px;
+  }
+  .pair-caption {
+    font-size: 13px;
+    color: var(--sub);
+    text-align: center;
+    margin-top: 6px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  .arch-figure {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: white;
+    padding: 8px;
+    margin: 16px 0;
+  }
+  .arch-figure img { display: block; width: 100%; height: auto; }
+  .note {
+    background: var(--bg-soft);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    font-size: 13.5px;
+    margin: 16px 0;
+  }
+  .index-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  .index-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13.5px;
+  }
+  .index-list .idx-label { font-weight: 700; }
+  .index-list .idx-detail { color: var(--sub); }
+  @media print {
+    body { padding: 0 24px; }
+    .cover { padding-top: 24px; }
+    h2 { page-break-after: avoid; }
+    .pair, table, .fact-panel, .arch-figure { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="kicker">Case Study</div>
+  <h1>Lumine</h1>
+  <p class="subtitle">Evidence-Based CRM for Luxury Retail Sales Teams</p>
+  <p class="meta">Piriya (Benz) Lapa &middot; Business Analyst / System Analyst &middot; August 2026</p>
+</div>
+
+<h2><span class="num">1</span>The Problem</h2>
+<p class="lede">
+  A customer buys something, says thanks, and walks out — and more often than not, no one ever follows up.
+</p>
+<p>
+  I watched that happen for nine years on a retail sales floor, alongside the daily grind of reconciling
+  sales data by hand and watching promising leads quietly go cold. Leadership wanted the team to follow up
+  with customers more consistently — a good goal that was hard to actually execute by hand, day after day,
+  across dozens of customers and a constant stream of new purchases. Relationship-driven sales opportunities
+  were falling through the cracks not from a lack of intent, but from a lack of structure.
+</p>
+
+<h2><span class="num">2</span>The Approach</h2>
+<p>
+  Rather than wait for someone else to fix it, I taught myself to build the fix. Lumine is a CRM built
+  around a tiered follow-up cadence — near-term, mid-term, and long-term touchpoints after a purchase —
+  automating the reminders and client history that used to live only in memory and spreadsheets.
+</p>
+<p>
+  I own the full system: requirements, architecture, and QA. I directed AI coding agents across seven
+  specialized roles (Architect, PM, QA, Developer, Security, DevOps, UX/UI) through disciplined sprints,
+  with tests written before code at every stage. AI wrote the implementation; every requirements,
+  architecture, and quality decision stayed fully mine.
+</p>
+<p>
+  None of this is just a claim — the rest of this document is the proof, step by step.
+</p>
+
+<h2><span class="num">3</span>System at a Glance</h2>
+<div class="fact-panel">
+  <div class="fact"><span class="num">8</span><span class="label">Backend routers</span></div>
+  <div class="fact"><span class="num">24</span><span class="label">REST endpoints</span></div>
+  <div class="fact"><span class="num">331</span><span class="label">Automated tests, all passing</span></div>
+  <div class="fact"><span class="num">14</span><span class="label">Mobile app screens</span></div>
+</div>
+<p>
+  Two deployables, one shared contract: a Python FastAPI backend on a MySQL-compatible database, and a
+  React Native + Expo mobile app, kept in sync through a single OpenAPI specification that governs every
+  field name on both sides. Strict layering — routers handle HTTP concerns only, services hold business
+  logic, repositories are the only layer that touches the database directly.
+</p>
+<div class="arch-figure">
+  <img src="case-study-assets/lumine-architecture.svg" alt="Lumine system architecture diagram" />
+</div>
+
+<h2><span class="num">4</span>Walkthrough: Logic to Live Screen</h2>
+<p>
+  A diagram is only worth as much as its connection to what actually ships. These three pairs show the
+  design decision on the left and the exact screen it produces on the right.
+</p>
+
+<h3>Scheduling Logic → Today's Queue</h3>
+<div class="pair">
+  <div>
+    <div class="pair-tag">Logic</div>
+    <div class="frame"><img src="case-study-assets/lumine-dfd-l2-schedule-followups.svg" alt="Scheduling logic diagram" /></div>
+  </div>
+  <div>
+    <div class="pair-tag">Live</div>
+    <div class="frame"><img src="case-study-assets/lumine-dashboard.png" alt="Dashboard screenshot showing today's follow-up queue" /></div>
+  </div>
+</div>
+<p class="pair-caption">The tiered scheduling flow on the left is what actually produces the follow-up queue an associate sees on the right.</p>
+
+<h3>Customer Profile Logic → Live Screen</h3>
+<div class="pair">
+  <div>
+    <div class="pair-tag">Logic</div>
+    <div class="frame"><img src="case-study-assets/lumine-dfd-l2-view-customer-profile.svg" alt="Customer profile access logic diagram" /></div>
+  </div>
+  <div>
+    <div class="pair-tag">Live</div>
+    <div class="frame"><img src="case-study-assets/lumine-customer-profile.png" alt="Customer profile screenshot" /></div>
+  </div>
+</div>
+<p class="pair-caption">Store-wide read, PII fields excluded — the diagram's access rule matches exactly what renders on the live customer profile screen.</p>
+
+<h3>Auto-Touch Logic → Queue Screen</h3>
+<div class="pair">
+  <div>
+    <div class="pair-tag">Logic</div>
+    <div class="frame"><img src="case-study-assets/lumine-dfd-l2-auto-touch.svg" alt="Auto-Touch logic diagram" /></div>
+  </div>
+  <div>
+    <div class="pair-tag">Live</div>
+    <div class="frame"><img src="case-study-assets/lumine-auto-touch.png" alt="Auto-Touch queue screenshot" /></div>
+  </div>
+</div>
+<p class="pair-caption">Draft-then-review flow — the diagram's two-step design is why the live queue always shows an editable draft, never an auto-sent message. Automated dispatch without human review was never the plan; it's a deliberate, permanent product decision, not a shortcut waiting to be enabled.</p>
+
+<h2><span class="num">5</span>A Real Operational Lesson</h2>
+<p>
+  Backend and database run on free-tier cloud infrastructure, configured manually rather than through
+  infrastructure-as-code. Early on, that manual setup had a gap: deploying new code didn't automatically
+  apply new database migrations. A schema change shipped without its migration being applied to
+  production — and the very next endpoint call that depended on it failed until the migration was run by
+  hand.
+</p>
+<p>
+  The fix itself was quick. The lesson was the useful part: "deploy" and "migrate" are two separate steps
+  that both need to be confirmed, not one step that happens to include the other. I added a manual
+  migration-verification step to the deployment process afterward, and it hasn't recurred since. Shipping
+  something real means owning what breaks, not just what you built.
+</p>
+
+<h2><span class="num">6</span>Outcome &amp; Reflection</h2>
+<p>
+  Lumine is deployed and in active daily use. 331 automated tests pass across the backend, the mobile app
+  covers all 14 core screens, and the system has been running in production long enough to surface — and
+  fix — a real operational gap, not just a demo-day gap.
+</p>
+<p>
+  What I'd extend next: automated outreach dispatch is fully built but deliberately gated off pending
+  further validation — the natural next step is expanding real-world testing to turn that gate on with
+  confidence. A CI/CD pipeline is the other clear next investment, replacing the current manual
+  test-and-deploy workflow with an enforced one.
+</p>
+
+<h2><span class="num">7</span>Evidence Index</h2>
+<ul class="index-list">
+  <li><span class="idx-label">Live demo</span> — <span class="idx-detail">the deployed API is reachable directly; see the portfolio site for the current link.</span></li>
+  <li><span class="idx-label">Source code</span> — <span class="idx-detail">GitHub repository, linked from the portfolio site's Project Resources panel.</span></li>
+  <li><span class="idx-label">Full SRS</span> — <span class="idx-detail">a complete requirements specification (13 diagram views, full data design, all functional and non-functional requirements) is available as a companion PDF.</span></li>
+</ul>
+
+</body>
+</html>

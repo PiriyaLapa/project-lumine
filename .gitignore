@@ -40,6 +40,10 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
+# draw.io editor lock/backup files (GH #35)
+.$*.bkp
+.$*.dtmp
+
 # ---------------------------------------------------------------------------
 # Never ignore (always commit these)
 # openapi.yaml — API contract, single source of truth

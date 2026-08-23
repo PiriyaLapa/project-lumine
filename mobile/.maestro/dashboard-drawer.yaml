@@ -1,0 +1,31 @@
+# E2E — hamburger drawer: profile header, Main Menu nav, backdrop close.
+#
+# Depends on feature/nav-drawer (AppDrawer.tsx) — NOT yet merged to develop
+# as of this writing, so this flow will fail until that branch lands. Kept
+# here now so it's ready the moment it does, rather than written from
+# scratch later.
+#
+# The hamburger button and drawer menu rows currently have no testID/
+# accessibilityLabel, so this flow taps by point — more brittle than a
+# selector-based tap. Worth adding testIDs to AppDrawer.tsx and the
+# Dashboard hamburger TouchableOpacity as a follow-up hardening pass; swap
+# these `tapOn: point` steps for `tapOn: id:` once that's done.
+appId: host.exp.exponent
+---
+- runFlow: login.yaml
+- tapOn:
+    point: "8%,8%" # hamburger icon, top-left of Dashboard header
+- assertVisible: "MAIN MENU"
+- assertVisible: "Auto-Touch"
+- assertVisible: "Follow-Up Report"
+- assertVisible: "Completed Tasks"
+- assertVisible: "Upload SAP File"
+- assertVisible: "Logout"
+- tapOn: "Auto-Touch"
+- assertNotVisible: "MAIN MENU" # drawer closed after navigating
+- back
+- tapOn:
+    point: "8%,8%"
+- tapOn:
+    point: "70%,30%" # backdrop, right of the 300dp-wide drawer
+- assertNotVisible: "MAIN MENU" # backdrop tap closed the drawer
