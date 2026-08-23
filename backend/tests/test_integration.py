@@ -148,7 +148,7 @@ class TestTasksEndpoint:
 
         task = make_task()
         with patch("app.routers.tasks.task_repo") as mock_repo:
-            mock_repo.get_tasks_for_staff.return_value = [(task, "Benz", "Pisit Boonchanya")]
+            mock_repo.get_tasks_for_staff.return_value = [(task, "Benz", "Somchai Jaidee")]
             resp = client.get("/api/v1/tasks", headers=bearer())
 
         app.dependency_overrides.clear()
@@ -169,7 +169,7 @@ class TestTasksEndpoint:
         client = TestClient(app)
 
         with patch("app.routers.tasks.task_repo") as mock_repo:
-            mock_repo.get_tasks_for_store.return_value = [(make_task(), "Benz", "Pisit Boonchanya")]
+            mock_repo.get_tasks_for_store.return_value = [(make_task(), "Benz", "Somchai Jaidee")]
             resp = client.get("/api/v1/tasks", headers=bearer(role="store_manager", staff_id=2))
 
             mock_repo.get_tasks_for_store.assert_called_once()
@@ -218,7 +218,7 @@ class TestTaskPatchEndpoint:
             mock_repo.get_by_id.return_value = task
             mock_repo.mark_done.return_value = done_task
             mock_repo.get_staff_name_for_task.return_value = "Benz"
-            mock_repo.get_customer_name_for_task.return_value = "Pisit Boonchanya"
+            mock_repo.get_customer_name_for_task.return_value = "Somchai Jaidee"
             resp = client.patch(
                 "/api/v1/tasks/1",
                 json={"status": "Done"},

@@ -69,7 +69,7 @@ class TestGetProfile:
         from app.services import customer_profile_service
 
         mock_txn_repo.get_by_customer_in_store.return_value = [
-            make_transaction(customer_name="Pisit Boonchanya", created_at=datetime(2026, 1, 5)),
+            make_transaction(customer_name="Somchai Jaidee", created_at=datetime(2026, 1, 5)),
         ]
         mock_cust_repo.get_by_id.return_value = None
         db = MagicMock()
@@ -77,7 +77,7 @@ class TestGetProfile:
         result = customer_profile_service.get_profile(db, "C2", store_id=1)
 
         assert result["customer_id"] == "C2"
-        assert result["name"] == "Pisit Boonchanya"
+        assert result["name"] == "Somchai Jaidee"
         assert result["do_not_contact"] is False
         assert result["source"] == "sap_only"
 

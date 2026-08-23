@@ -11,6 +11,7 @@ __pycache__/
 *.pyd
 .env
 .env.save
+.env.*
 credentials.json
 *.egg-info/
 .pytest_cache/
