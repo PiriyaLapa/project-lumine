@@ -326,7 +326,7 @@ COLUMN_MAP_WITH_CUSTOMER_NAME = {
 class TestOptionalCustomerNameField:
     def test_customer_name_column_extracted_when_present(self):
         """A mapped 'Customer name' column is passed through as customer_name."""
-        row = {**VALID_ROW, "Customer name": "Pisit Boonchanya"}
+        row = {**VALID_ROW, "Customer name": "Somchai Jaidee"}
         with patch(
             "app.services.sap_parser.SAPParser._load_column_map",
             return_value=COLUMN_MAP_WITH_CUSTOMER_NAME,
@@ -334,7 +334,7 @@ class TestOptionalCustomerNameField:
             parser = SAPParser(staff_employee_code="EMP001")
             file = make_csv([row])
             result = parser.parse(file, filename="test.csv")
-        assert result.records[0]["customer_name"] == "Pisit Boonchanya"
+        assert result.records[0]["customer_name"] == "Somchai Jaidee"
 
     def test_customer_name_absent_when_column_not_mapped(self):
         """No 'Customer name' mapping configured — field simply isn't produced (optional)."""

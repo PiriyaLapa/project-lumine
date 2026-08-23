@@ -40,7 +40,7 @@ services:
       SECRET_KEY: e2e-test-only-secret-not-for-production
       GOOGLE_DRIVE_CREDENTIALS_PATH: credentials.json
       GOOGLE_DRIVE_FOLDER_ID: e2e-no-real-folder
-      ENVIRONMENT: e2e
+      ENV: e2e
     ports:
       - "8010:8000"
     depends_on:

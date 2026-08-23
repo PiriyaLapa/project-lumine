@@ -43,7 +43,7 @@ def bearer(role="sales_associate", staff_id=1, store_id=8901):
     return {"Authorization": f"Bearer {token}"}
 
 
-def make_task_row(task_id=1, status="Pending", staff_name="Benz", customer_name="Pisit Boonchanya"):
+def make_task_row(task_id=1, status="Pending", staff_name="Benz", customer_name="Somchai Jaidee"):
     """(FollowUpTask mock, staff_name, customer_name) — matches new repo return shape."""
     t = MagicMock(spec=FollowUpTask)
     t.id = task_id
@@ -80,7 +80,7 @@ class TestCustomerNameOnTasks:
         client = TestClient(app)
 
         with patch("app.routers.tasks.task_repo") as mock_repo:
-            mock_repo.get_tasks_for_staff.return_value = [make_task_row(customer_name="Pisit Boonchanya")]
+            mock_repo.get_tasks_for_staff.return_value = [make_task_row(customer_name="Somchai Jaidee")]
             resp = client.get("/api/v1/tasks", headers=bearer())
 
         app.dependency_overrides.clear()
@@ -88,7 +88,7 @@ class TestCustomerNameOnTasks:
         data = resp.json()
         assert len(data) == 1
         assert "customer_name" in data[0], "customer_name missing from response"
-        assert data[0]["customer_name"] == "Pisit Boonchanya"
+        assert data[0]["customer_name"] == "Somchai Jaidee"
 
     def test_manager_tasks_include_correct_customer_names(self):
         """GET /tasks for manager returns the correct customer_name per task."""
@@ -97,7 +97,7 @@ class TestCustomerNameOnTasks:
         client = TestClient(app)
 
         rows = [
-            make_task_row(task_id=1, customer_name="Pisit Boonchanya"),
+            make_task_row(task_id=1, customer_name="Somchai Jaidee"),
             make_task_row(task_id=2, customer_name="Asia - Others"),
         ]
         with patch("app.routers.tasks.task_repo") as mock_repo:
@@ -108,7 +108,7 @@ class TestCustomerNameOnTasks:
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 2
-        assert data[0]["customer_name"] == "Pisit Boonchanya"
+        assert data[0]["customer_name"] == "Somchai Jaidee"
         assert data[1]["customer_name"] == "Asia - Others"
 
     def test_customer_name_is_nullable(self):
@@ -179,7 +179,7 @@ class TestCustomerNameOnTasks:
             mock_repo.get_by_id.return_value = task_mock
             mock_repo.mark_done.return_value = done_mock
             mock_repo.get_staff_name_for_task.return_value = "Benz"
-            mock_repo.get_customer_name_for_task.return_value = "Pisit Boonchanya"
+            mock_repo.get_customer_name_for_task.return_value = "Somchai Jaidee"
 
             resp = client.patch(
                 "/api/v1/tasks/1", json={"status": "Done"}, headers=bearer()
@@ -187,6 +187,6 @@ class TestCustomerNameOnTasks:
 
         app.dependency_overrides.clear()
         assert resp.status_code == 200
-        assert resp.json()["customer_name"] == "Pisit Boonchanya"
+        assert resp.json()["customer_name"] == "Somchai Jaidee"
         mock_repo.get_customer_name_for_task.assert_called_once()
         assert mock_repo.get_customer_name_for_task.call_args[0][1] == "IDOC001"

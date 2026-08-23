@@ -47,7 +47,7 @@ def bearer(role="sales_associate", staff_id=1, store_id=8901):
     return {"Authorization": f"Bearer {token}"}
 
 
-def make_task_row(task_id=1, status="Pending", staff_name="Benz", customer_name="Pisit Boonchanya"):
+def make_task_row(task_id=1, status="Pending", staff_name="Benz", customer_name="Somchai Jaidee"):
     t = MagicMock(spec=FollowUpTask)
     t.id = task_id
     t.customer_id = "CUST001"

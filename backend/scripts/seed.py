@@ -18,9 +18,16 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from app.config import settings
 from app.database import SessionLocal
 from app.models.staff import Staff
 from app.services.auth_service import AuthService
+
+if settings.ENV == "production":
+    sys.exit(
+        "Refusing to run: ENV=production. This script inserts hardcoded "
+        "test accounts and must never run against the production database."
+    )
 
 SEED_STAFF = [
     {

@@ -19,10 +19,18 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from app.config import settings
 from app.database import SessionLocal
 from app.models.store import Store  # noqa: F401 — registers `stores` table for staff.store_id FK resolution
 from app.models.staff import Staff
 from app.services.auth_service import AuthService
+
+if settings.ENV == "production":
+    sys.exit(
+        "Refusing to run: ENV=production. This script is for the isolated "
+        "docker-compose.e2e.yml stack only and must never run against "
+        "production."
+    )
 
 E2E_STAFF_EMAIL = "e2e@lumine.test"
 E2E_STAFF_PASSWORD = "e2e-password-123"

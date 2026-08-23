@@ -1,3 +1,4 @@
+import re
 import sys
 import os
 from logging.config import fileConfig
@@ -16,6 +17,22 @@ import app.models.staff          # noqa: F401
 import app.models.transaction    # noqa: F401
 import app.models.follow_up_task # noqa: F401
 import app.models.evidence_log   # noqa: F401
+
+
+def _redacted(url: str) -> str:
+    """Mask credentials so a target-DB confirmation prompt is safe to print."""
+    return re.sub(r"://[^:]+:[^@]+@", "://***:***@", url)
+
+
+if settings.ENV == "production" and os.getenv("ALEMBIC_CONFIRM_PRODUCTION") != "1":
+    sys.exit(
+        "Refusing to run migrations: ENV=production "
+        f"(target: {_redacted(settings.DATABASE_URL)}).\n"
+        "This is a real safety check, not a bug — migrating production is "
+        "sometimes intentional (see docs/render-env-setup.md), so it's not "
+        "blocked outright. Set ALEMBIC_CONFIRM_PRODUCTION=1 to confirm you "
+        "mean to run this against production."
+    )
 
 config = context.config
 
