@@ -37,7 +37,7 @@ def make_task_row(task_id=1, status="Pending"):
     t.status = status
     t.created_at = "2026-04-29T00:00:00"
     t.updated_at = "2026-04-29T00:00:00"
-    return (t, "Benz", "Pisit Boonchanya")
+    return (t, "Benz", "Somchai Jaidee")
 
 
 def make_transaction(idoc="IDOC001", price=1500, returned=False):
@@ -61,7 +61,7 @@ class TestCustomerProfileEndpoint:
     def test_returns_profile_scoped_to_requester_store(self, mock_service):
         mock_service.get_profile.return_value = {
             "customer_id": "CUST001",
-            "name": "Pisit Boonchanya",
+            "name": "Somchai Jaidee",
             "do_not_contact": False,
             "source": "crm_import",
             "created_at": "2026-01-01 00:00:00",
@@ -73,7 +73,7 @@ class TestCustomerProfileEndpoint:
         assert resp.status_code == 200
         body = resp.json()
         assert body["customer_id"] == "CUST001"
-        assert body["name"] == "Pisit Boonchanya"
+        assert body["name"] == "Somchai Jaidee"
         assert "phone" not in body
         assert "email" not in body
         assert "line_id" not in body

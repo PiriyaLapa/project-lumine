@@ -17,12 +17,14 @@ logging.basicConfig(
 
 _docs_url = None if settings.ENV == "production" else "/docs"
 _redoc_url = None if settings.ENV == "production" else "/redoc"
+_openapi_url = None if settings.ENV == "production" else "/openapi.json"
 
 app = FastAPI(
     title="Lumine CRM API",
     version="1.0.0",
     docs_url=_docs_url,
     redoc_url=_redoc_url,
+    openapi_url=_openapi_url,
 )
 
 app.add_middleware(

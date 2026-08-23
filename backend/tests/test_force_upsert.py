@@ -117,13 +117,13 @@ class TestTransactionUpsert:
         db = MagicMock()
 
         data = self._data(idoc="EXISTINGIDOC", sales_rep_name="Benz")
-        data["customer_name"] = "Pisit Boonchanya"
+        data["customer_name"] = "Somchai Jaidee"
 
         with patch("app.repositories.transaction_repo.get_by_idoc", return_value=existing):
             txn, created = upsert(db, data)
 
         assert created is False
-        assert txn.customer_name == "Pisit Boonchanya"
+        assert txn.customer_name == "Somchai Jaidee"
         db.flush.assert_called_once()
 
     def test_does_not_insert_duplicate_row(self):
