@@ -51,6 +51,16 @@ class Settings:
     LINE_CHANNEL_ACCESS_TOKEN: str | None = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 
     # ------------------------------------------------------------------
+    # Shared storage for the login rate limiter (app/rate_limit.py).
+    # Optional — without it, rate limiting falls back to in-memory
+    # storage, which only enforces correctly with exactly one backend
+    # process. Set this in production if Render runs more than one
+    # instance/replica, or the 10/minute limit won't be enforced
+    # reliably across them. See docs/render-env-setup.md.
+    # ------------------------------------------------------------------
+    REDIS_URL: str | None = os.getenv("REDIS_URL")
+
+    # ------------------------------------------------------------------
     # Auto-Touch automated customer messaging — send gate.
     # Defaults to disabled (False) even if the credentials above are set.
     # Sending real LINE/email messages to customers requires explicit
