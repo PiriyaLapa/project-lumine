@@ -95,6 +95,34 @@
     h2 { page-break-after: avoid; }
     table, .note { page-break-inside: avoid; }
   }
+  .diagram-page {
+    page-break-before: always;
+    page-break-inside: avoid;
+    padding-top: 32px;
+    text-align: center;
+  }
+  .diagram-page .diagram-fig {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .diagram-page .diagram-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    color: var(--ink);
+    margin: 0 0 20px;
+  }
+  .diagram-page img {
+    max-width: 100%;
+    max-height: 820px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+  }
 </style>
 </head>
 <body>
@@ -347,7 +375,74 @@ Mobile releases are built and distributed as an Android package through a manage
 <h2><span class="section-num">12</span>Appendix</h2>
 <p><strong>Diagram set</strong>: 13 companion diagram views — Use Case, ER Diagram, Sequence (core flow and
 Auto-Touch), Architecture, Data Flow (Levels 0–2), and BPMN — reflecting the same current system this
-specification describes.</p>
+specification describes. Reproduced in full below, one per page, in the same order and from the same
+source files shown on the portfolio site's diagram gallery.</p>
+
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 1</div>
+  <div class="diagram-label">Use Case Diagram</div>
+  <img src="srs-assets/lumine-use-case.svg" alt="Lumine Use Case Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 2</div>
+  <div class="diagram-label">System Architecture</div>
+  <img src="srs-assets/lumine-architecture.svg" alt="Lumine System Architecture Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 3</div>
+  <div class="diagram-label">ER Diagram</div>
+  <img src="srs-assets/lumine-er-diagram.svg" alt="Lumine ER Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 4</div>
+  <div class="diagram-label">BPMN — Tiered Follow-up Lifecycle</div>
+  <img src="srs-assets/lumine-bpmn.svg" alt="Lumine BPMN Tiered Follow-up Lifecycle Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 5</div>
+  <div class="diagram-label">Sequence Diagram</div>
+  <img src="srs-assets/lumine-sequence-main.svg" alt="Lumine Sequence Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 6</div>
+  <div class="diagram-label">Sequence — Auto-Touch</div>
+  <img src="srs-assets/lumine-sequence-auto-touch.svg" alt="Lumine Auto-Touch Sequence Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 7</div>
+  <div class="diagram-label">DFD — Level 0 (Context)</div>
+  <img src="srs-assets/lumine-dfd-level0.svg" alt="Lumine DFD Level 0 Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 8</div>
+  <div class="diagram-label">DFD — Level 1</div>
+  <img src="srs-assets/lumine-dfd-level1.svg" alt="Lumine DFD Level 1 Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 9</div>
+  <div class="diagram-label">DFD L2 — Import SAP Data</div>
+  <img src="srs-assets/lumine-dfd-l2-import-sap.svg" alt="Lumine DFD Level 2 Import SAP Data Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 10</div>
+  <div class="diagram-label">DFD L2 — Schedule Follow-ups</div>
+  <img src="srs-assets/lumine-dfd-l2-schedule-followups.svg" alt="Lumine DFD Level 2 Schedule Follow-ups Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 11</div>
+  <div class="diagram-label">DFD L2 — Complete Follow-up</div>
+  <img src="srs-assets/lumine-dfd-l2-complete-followup.svg" alt="Lumine DFD Level 2 Complete Follow-up Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 12</div>
+  <div class="diagram-label">DFD L2 — View Customer Profile</div>
+  <img src="srs-assets/lumine-dfd-l2-view-customer-profile.svg" alt="Lumine DFD Level 2 View Customer Profile Diagram" />
+</div>
+<div class="diagram-page">
+  <div class="diagram-fig">Fig. 13</div>
+  <div class="diagram-label">DFD L2 — Auto-Touch</div>
+  <img src="srs-assets/lumine-dfd-l2-auto-touch.svg" alt="Lumine DFD Level 2 Auto-Touch Diagram" />
+</div>
 
 </body>
 </html>
