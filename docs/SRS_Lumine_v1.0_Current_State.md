@@ -10,7 +10,7 @@
 
 ### 1.1 Purpose
 
-Lumine is an evidence-based CRM for luxury retail sales associates (built for Hugo Boss Thailand). It ingests SAP transaction exports, automatically schedules a "2-2-2" follow-up cadence per purchase, and requires photographic/written evidence before a follow-up task can be marked complete. This document describes the system **as it is actually built and deployed today**, not as originally planned.
+Lumine is an evidence-based CRM for luxury retail sales associates (built for Hugo Boss Thailand). It ingests SAP transaction exports, automatically schedules a "T1/T2/T3" follow-up cadence per purchase, and requires photographic/written evidence before a follow-up task can be marked complete. This document describes the system **as it is actually built and deployed today**, not as originally planned.
 
 ### 1.2 Scope
 
@@ -23,8 +23,8 @@ Two deployables, one shared contract:
 
 | Term | Meaning |
 |---|---|
-| 2-2-2 | Follow-up cadence: touch a customer 2 days, 2 weeks, and 2 months after a purchase |
-| Cycle Reset | When a customer buys again, all their Pending follow-up tasks are superseded and a fresh 2-2-2 cycle starts from the new purchase date |
+| T1/T2/T3 | Follow-up cadence: touch a customer 2 days, 2 weeks, and 2 months after a purchase |
+| Cycle Reset | When a customer buys again, all their Pending follow-up tasks are superseded and a fresh T1/T2/T3 cycle starts from the new purchase date |
 | Evidence | Photo + notes an associate logs to prove a follow-up actually happened |
 | Auto-Touch | AI-assisted follow-up: drafts a personalized message via Claude, associate reviews and sends manually (or, if enabled, the backend can dispatch via LINE/email) |
 | PDPA | Thailand's Personal Data Protection Act — governs how customer phone/email/LINE ID are stored, logged, and (not) contacted |
@@ -96,7 +96,7 @@ Full visual diagrams (Use Case, ERD, Architecture, DFD Levels 0-2, Sequence, BPM
 | `staff` | id PK, employee_code UK, name, role, store_id FK, email UK, hashed_password, deleted_at | `deleted_at` = soft-delete for PDPA compliance |
 | `customers` | customer_id PK (str), name, phone (PII), email (PII), line_id, language, **language_source** (`auto_detected`\|`manual_override`), do_not_contact, source (`crm_import`\|`manual_registration`\|`sap_only`), staff_id FK nullable | `language_source` is a real field not present in the diagram set's ER tab — should be backfilled there |
 | `transactions` | idoc_number PK, posting_date, ean, material_desc, customer_id (SAP code, **not an enforced FK**), staff_id FK, sales_rep_name, customer_name (nullable, migration 0010), price (nullable, migration 0009), returned | `customer_id` intentionally not FK-enforced — registration is optional |
-| `follow_up_tasks` | id PK, customer_id, idoc_number FK, task_type (2D\|2W\|2M), task_basis, due_date, calculated_from, status (Pending\|Done\|Superseded), skipped_until | `skipped_until` powers Auto-Touch's skip/defer flow |
+| `follow_up_tasks` | id PK, customer_id, idoc_number FK, task_type (T1\|T2\|T3), task_basis, due_date, calculated_from, status (Pending\|Done\|Superseded), skipped_until | `skipped_until` powers Auto-Touch's skip/defer flow |
 | `evidence_logs` | id PK, task_id FK, notes, image_uri (nullable if Drive upload failed), image_size_kb, timestamp, staff_id FK | |
 | `messages` | id PK, customer_id FK, staff_id FK, task_id FK nullable, touchpoint_type, message_text, channel_line, channel_email, status_line, status_email, sent_at | Auto-Touch's send-attempt log |
 | `upload_logs` | id PK, store_id FK, staff_id FK, filename, uploaded_at, row_count, tasks_created, date_range_start/end, status | |
@@ -126,11 +126,11 @@ Full visual diagrams (Use Case, ERD, Architecture, DFD Levels 0-2, Sequence, BPM
 ### FR-01 · SAP Data Processing
 `POST /api/v1/upload` (`upload.py` → `sap_parser.py` → `transaction_repo` → `CycleReset`). Parses SAP CSV/Excel export, columns mapped via `sap_column_map.json` (Rule 7 — never hardcoded), filters rows to the uploader's own `employee_code`. Default (`force=false`) rejects on date-range overlap with a conflict response; `force=true` bypasses the check and upserts instead of inserting.
 
-### FR-02 · Automated 2-2-2 Follow-up Scheduling
-`task_scheduler.py`. Fixed offsets from `posting_date` only — 2D = +2 days, 2W = +14 days, 2M = +60 days. No weekend/holiday adjustment; due dates display as-is. `task_basis` is always `posting_date`, never "today."
+### FR-02 · Automated T1/T2/T3 Follow-up Scheduling
+`task_scheduler.py`. Fixed offsets from `posting_date` only — T1 = +2 days, T2 = +14 days, T3 = +60 days. No weekend/holiday adjustment; due dates display as-is. `task_basis` is always `posting_date`, never "today."
 
 ### FR-03 · Cycle Reset Logic
-`cycle_reset.py`. On a new purchase for an existing customer: supersede all their currently-Pending tasks first, *then* create a fresh 2-2-2 cycle from the new `posting_date`. Order is load-bearing — never both old and new Pending simultaneously.
+`cycle_reset.py`. On a new purchase for an existing customer: supersede all their currently-Pending tasks first, *then* create a fresh T1/T2/T3 cycle from the new `posting_date`. Order is load-bearing — never both old and new Pending simultaneously.
 
 ### FR-04 · Evidence Logging
 `POST /api/v1/evidence`, `PATCH /api/v1/evidence/{evidence_id}` (`evidence_service.py`). Photo ≤800KB / ≤1280px (client-compresses via `expo-image-manipulator`, server re-checks as a safety net), notes up to 2000 chars. **Google Drive upload failure is non-fatal by design** — the evidence record is still saved with `image_uri=null` rather than blocking the associate.
@@ -152,7 +152,7 @@ Enforced per-endpoint, not globally:
 
 ### FR-08 · Auto-Touch — AI-Assisted Follow-up *(not present in v4.1's FR list; the most substantial subsystem built since v4.1)*
 5 endpoints (`auto_touch.py`, `auto_touch_service.py`):
-1. `GET /auto-touch/today` — due-today list, excludes `do_not_contact` customers and actively `skipped_until` tasks, ordered overdue-first then 2D→2W→2M.
+1. `GET /auto-touch/today` — due-today list, excludes `do_not_contact` customers and actively `skipped_until` tasks, ordered overdue-first then T1→T2→T3.
 2. `POST /auto-touch/generate-message` — drafts a message via Claude (`message_generator.py`); PDPA opt-out sentence is hardcoded into the system prompt, not JSON-editable; draft-only, never sends.
 3. `POST /auto-touch/send/{customer_id}` — dispatches via LINE and/or email. **Gated by `AUTO_TOUCH_SEND_ENABLED`, checked before any DB lookup or dispatch** — an independent kill-switch on top of whatever credentials are configured. Marks the task Done only if at least one channel succeeds.
 4. `POST /auto-touch/skip/{customer_id}` — defers `skipped_until` to tomorrow; task stays Pending.
