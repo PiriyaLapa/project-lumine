@@ -22,3 +22,4 @@ black==24.4.2
 anthropic==0.117.0
 Faker==40.37.0
 slowapi==0.1.10
+redis==5.0.4

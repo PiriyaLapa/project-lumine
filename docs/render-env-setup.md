@@ -109,6 +109,35 @@ the var.
 
 ---
 
+### 5. `REDIS_URL` — recommended, fixes rate limiting across multiple instances
+
+**Used by**: `app/rate_limit.py` — shared storage for the login rate limiter
+(`/api/v1/auth/login`, 10 attempts/minute/IP)
+**Required**: No — falls back to in-memory storage when unset
+**Format**: `redis://[:password@]host:port[/db]` (or `rediss://` for TLS)
+
+**Status (2026-08-24): confirmed live that rate limiting isn't reliably
+enforced without this.** Without `REDIS_URL`, the limiter's counter lives
+in each backend process's own memory — if Render runs more than one
+instance/replica, a client's rapid requests get split across instances and
+never reliably accumulate to the limit on any single one (this was verified
+against production: two separate 10-15 request bursts produced no clean 429
+at all). Setting `REDIS_URL` moves the counter to shared storage so every
+instance sees the same count.
+
+**Where to get it**: Render's own managed Redis / Key Value add-on
+(Dashboard → New → Key Value, in the same region as `lumine-api-qi77` for
+lowest latency) gives you a connection string in the format above — copy it
+directly into this env var. Any other Redis provider works too, as long as
+the URL is reachable from Render.
+
+**If left unset**: nothing breaks — the app falls back to in-memory rate
+limiting exactly as before. It just means the limit is enforced per-instance
+rather than globally, so the effective limit could be looser than 10/min if
+Render is running multiple replicas.
+
+---
+
 ## After Adding All Three
 
 Run this verification:
