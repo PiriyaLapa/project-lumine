@@ -10,7 +10,7 @@
 
 ### 1.1 Purpose
 
-Lumine is an evidence-based CRM for luxury retail sales associates (built for Hugo Boss Thailand). It ingests SAP transaction exports, automatically schedules a "T1/T2/T3" follow-up cadence per purchase, and requires photographic/written evidence before a follow-up task can be marked complete. This document describes the system **as it is actually built and deployed today**, not as originally planned.
+Lumine is an evidence-based CRM for luxury retail sales associates (built for a luxury retail employer's Thailand operations). It ingests SAP transaction exports, automatically schedules a "T1/T2/T3" follow-up cadence per purchase, and requires photographic/written evidence before a follow-up task can be marked complete. This document describes the system **as it is actually built and deployed today**, not as originally planned.
 
 ### 1.2 Scope
 
@@ -109,7 +109,7 @@ Full visual diagrams (Use Case, ERD, Architecture, DFD Levels 0-2, Sequence, BPM
 |---|---|
 | 0001 | Initial schema |
 | 0002 | Add `stores` table |
-| 0003 | Replace placeholder store with real Hugo Boss Thailand stores |
+| 0003 | Replace placeholder store with real store locations |
 | 0004 | Add `upload_logs` |
 | 0005 | Add `transactions.sales_rep_name` |
 | 0006 | Add `customers` table (unified customer record) |
